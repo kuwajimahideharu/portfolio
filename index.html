@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hideharu Portfolio | Web係のおじさん</title>
+    <meta name="description" content="10年以上のITインフラ経験を持つエンジニア「ひではる」のポートフォリオ。手書きHTMLの時代からAIと共に歩む現代へ。">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">Hideharu</h1>
+            <nav class="nav">
+                <ul>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#works">Works</a></li>
+                    <li><a href="#skills">Skills</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container hero-content fade-in-up">
+            <p class="hero-sub">Web係のおじさん</p>
+            <h2 class="hero-title">手書きHTMLの時代から、<br>AIと共に歩む現代へ。</h2>
+            <p class="hero-text">「止まらないサイト」を支え続ける、あなたの街のWeb係。</p>
+            <p class="hero-desc">10年以上のITインフラ経験を持つエンジニアが、<br>お客様の『困った』を『安心』に変えます。</p>
+            <a href="#contact" class="btn btn-primary">お問い合わせ</a>
+        </div>
+    </section>
+
+    <!-- About Me -->
+    <section id="about" class="section about">
+        <div class="container">
+            <div class="section-header fade-in-up">
+                <h2 class="section-title">About Me</h2>
+                <div class="section-line"></div>
+            </div>
+            <div class="about-content fade-in-up">
+                <div class="about-image fade-in-up">
+    <img src="images/profile.jpg" alt="ひではる（Web係のおじさん）" class="profile-photo">
+</div>
+                <div class="about-text">
+                    <p>はじめまして。Web制作者の『ひではる』と申します。ネット上では『Web係のおじさん』と名乗っております。</p>
+                    <p>私のWebキャリアは、2000年頃のHTML手書き時代から始まりました。新聞社でのサイト制作やITインフラ保守の経験を活かし、現在はAIという相棒と共に、基礎を大切にした『運用に強いWeb制作』を行っています。</p>
+                    <p>AIの速度と、人間の目による細やかな調整を組み合わせ、誠実なサイト制作をお約束します。</p>
+                </div>
+                <div class="about-usps">
+                    <div class="usp-item">
+                        <i class="fa-brands fa-windows"></i>
+                        <span>Windowsでの効率的制作</span>
+                    </div>
+                    <div class="usp-item">
+                        <i class="fa-brands fa-linux"></i>
+                        <span>自宅内Linuxサーバーでの<br>セキュアなデータ管理</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Works -->
+    <section id="works" class="section works bg-light">
+        <div class="container">
+            <div class="section-header fade-in-up">
+                <h2 class="section-title">Works</h2>
+                <div class="section-line"></div>
+            </div>
+            <div class="works-grid">
+                <!-- Work 1 -->
+                <article class="work-card fade-in-up">
+                    
+
+<div class="work-image">
+    <img src="images/work-cafe.png" alt="Cafe Aroma 制作実績">
+</div>
+                    <div class="work-info">
+                        <h3>Cafe Aroma</h3>
+                        <p>オーガニックコーヒーショップのサイト。温かみのあるデザイン。</p>
+                    </div>
+                </article>
+                <!-- Work 2 -->
+                <article class="work-card fade-in-up" data-delay="200">
+                    <div class="work-image">
+                        <img src="images/work-restaurant.png" alt="和食処 秀< 制作実績">
+                    </div>
+                    <div class="work-info">
+                        <h3>和食処 秀</h3>
+                        <p>伝統と高級感を感じさせる和食店のサイト。静謐なデザイン。</p>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technical Skills -->
+    <section id="skills" class="section skills">
+        <div class="container">
+            <div class="section-header fade-in-up">
+                <h2 class="section-title">Technical Skills</h2>
+                <div class="section-line"></div>
+            </div>
+            <div class="skills-grid">
+                <div class="skill-item fade-in-up">
+                    <i class="fa-brands fa-html5"></i>
+                    <h3>HTML5 / CSS3</h3>
+                    <p>モダンコーディング</p>
+                </div>
+                <div class="skill-item fade-in-up" data-delay="100">
+                    <i class="fa-brands fa-js"></i>
+                    <h3>JS / GAS</h3>
+                    <p>GASによるお問い合わせ自動連携</p>
+                </div>
+                <div class="skill-item fade-in-up" data-delay="200">
+                    <i class="fa-solid fa-robot"></i>
+                    <h3>AI Creation</h3>
+                    <p>制作効率化</p>
+                </div>
+                <div class="skill-item fade-in-up" data-delay="300">
+                    <i class="fa-brands fa-linux"></i>
+                    <h3>Linux Admin</h3>
+                    <p>Ubuntu Serverによる自社DB運用</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="section contact bg-dark">
+        <div class="container">
+            <div class="section-header fade-in-up">
+                <h2 class="section-title text-white">Contact</h2>
+                <div class="section-line line-gold"></div>
+            </div>
+            <form id="contactForm" class="contact-form fade-in-up">
+                <div class="form-group">
+                    <label for="name">お名前</label>
+                    <input type="text" id="name" name="name" required placeholder="例：山田 太郎">
+                </div>
+                <div class="form-group">
+                    <label for="email">メールアドレス</label>
+                    <input type="email" id="email" name="email" required placeholder="例：info@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="message">お問い合わせ内容</label>
+                    <textarea id="message" name="message" rows="5" required placeholder="ご相談内容をご記入ください"></textarea>
+                </div>
+                <button type="submit" class="btn btn-gold" id="submitBtn">送信する</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Hideharu Portfolio. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
