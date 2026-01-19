@@ -308,7 +308,7 @@ h3 {
 .skills-grid {
     display: grid;
     /* 固定の4列から、中身のサイズに合わせて自動調整する設定に変更 */
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 30px;
     text-align: center;
 }
@@ -382,7 +382,8 @@ h3 {
 .footer {
     background-color: #0d1b2a;
     color: #888;
-    text-align: center; /* これが中央寄せの魔法です */
+    text-align: center;
+    /* これが中央寄せの魔法です */
     padding: 50px 0 30px;
     font-size: 0.9rem;
 }
@@ -394,7 +395,8 @@ h3 {
 }
 
 .privacy-policy h4 {
-    color: var(--color-accent); /* ゴールドのアクセント */
+    color: var(--color-accent);
+    /* ゴールドのアクセント */
     font-size: 0.9rem;
     margin-bottom: 10px;
 }
@@ -402,11 +404,12 @@ h3 {
 .privacy-policy p {
     font-size: 0.8rem;
     line-height: 1.8;
-    color: #aaa; /* 少し薄めの色で控えめに */
+    color: #aaa;
+    /* 少し薄めの色で控えめに */
 }
 
 .footer-bottom {
-    border-top: 1px solid rgba(255,255,255,0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding-top: 20px;
     margin-top: 20px;
 }
