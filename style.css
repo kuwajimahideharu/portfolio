@@ -1,7 +1,9 @@
 /* Base & Reset */
 :root {
-    --color-primary: #1a365d; /* Navy Blue */
-    --color-accent: #c5a059;  /* Gold */
+    --color-primary: #1a365d;
+    /* Navy Blue */
+    --color-accent: #c5a059;
+    /* Gold */
     --color-text: #333333;
     --color-text-light: #ffffff;
     --color-bg-light: #f9f9f9;
@@ -51,7 +53,9 @@ img {
 }
 
 /* Typography */
-h1, h2, h3 {
+h1,
+h2,
+h3 {
     font-family: var(--font-heading);
     font-weight: 700;
 }
@@ -127,7 +131,7 @@ h1, h2, h3 {
     left: 0;
     width: 100%;
     z-index: 1000;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     height: 70px;
     display: flex;
     align-items: center;
@@ -265,7 +269,7 @@ h1, h2, h3 {
     background: #fff;
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
     transition: transform 0.3s;
 }
 
@@ -279,7 +283,7 @@ h1, h2, h3 {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(255,255,255,0.8);
+    color: rgba(255, 255, 255, 0.8);
     font-size: 1.2rem;
     font-weight: bold;
 }
@@ -380,6 +384,11 @@ h1, h2, h3 {
     font-size: 0.9rem;
 }
 
+.footer-privacy {
+    margin-bottom: 10px;
+    font-size: 0.8rem;
+}
+
 /* Animations */
 .fade-in-up {
     opacity: 0;
@@ -395,46 +404,54 @@ h1, h2, h3 {
 /* Responsive */
 @media (max-width: 768px) {
     .nav {
-        display: none; /* Simplification for this demo */
+        display: none;
+        /* Simplification for this demo */
     }
-    
+
     .hero-title {
         font-size: 2rem;
     }
-    
+
     .works-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .skills-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .about-usps {
         flex-direction: column;
         gap: 20px;
     }
 }
+
 .about-content {
     display: flex;
     align-items: center;
     gap: 50px;
     flex-wrap: wrap;
 }
+
 .about-image {
     flex: 1;
     min-width: 300px;
 }
+
 .profile-photo {
     width: 100%;
     max-width: 400px;
-    border-radius: 8px; /* 角を少し丸く */
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1); /* 浮遊感を出す */
+    border-radius: 8px;
+    /* 角を少し丸く */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    /* 浮遊感を出す */
 }
+
 .about-text {
     flex: 2;
     min-width: 300px;
 }
+
 .work-note {
     font-size: 0.8rem;
     color: #999;
