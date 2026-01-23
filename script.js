@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    
+
     // --- Scroll Animations ---
     const observerOptions = {
         root: null,
@@ -47,28 +47,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 body: formData
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.result === 'success') {
-    // alertの代わりに、フォームを消してメッセージを表示する
-    contactForm.innerHTML = `
+                .then(res => res.json())
+                .then(data => {
+                    if (data.result === 'success') {
+                        // alertの代わりに、フォームを消してメッセージを表示する
+                        contactForm.innerHTML = `
         <div class="success-message" style="text-align:center; padding: 40px 0;">
             <i class="fa-regular fa-circle-check" style="font-size: 4rem; color: #c5a059; margin-bottom: 20px; display:block;"></i>
             <h3 style="color: #1a365d;">お問い合わせありがとうございます！</h3>
             <p>内容を確認し、24時間以内にご連絡いたします。</p>
         </div>
     `;
-}
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('送信エラーが発生しました。');
-            })
-            .finally(() => {
-                // Reset button state
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalBtnText;
-            });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('送信エラーが発生しました。');
+                })
+                .finally(() => {
+                    // Reset button state
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalBtnText;
+                });
         });
     }
 
@@ -77,7 +77,13 @@ document.addEventListener('DOMContentLoaded', () => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
             const targetId = this.getAttribute('href');
-            if (targetId === '#') return;
+            if (targetId === '#') {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+                return;
+            }
             const targetElement = document.querySelector(targetId);
             if (targetElement) {
                 window.scrollTo({
