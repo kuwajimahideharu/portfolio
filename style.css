@@ -831,6 +831,10 @@ h3 {
         padding-top: 0;
         transform: rotate(90deg);
     }
+
+    .flow-arrow.fade-in-up.visible {
+        transform: rotate(90deg);
+    }
 }
 
 .skills-grid {
