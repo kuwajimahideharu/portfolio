@@ -390,6 +390,199 @@ h3 {
     color: #888;
 }
 
+/* Section Subtitle */
+.section-subtitle {
+    color: #666;
+    margin-top: 15px;
+    font-size: 1rem;
+}
+
+/* Pricing Section */
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    align-items: start;
+}
+
+.pricing-card {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    padding-bottom: 30px;
+    position: relative;
+    transition: transform 0.3s;
+}
+
+.pricing-card:hover {
+    transform: translateY(-5px);
+}
+
+.pricing-card--recommend {
+    border: 2px solid var(--color-accent);
+}
+
+.pricing-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: var(--color-accent);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 5px 15px;
+    border-radius: 0 0 0 8px;
+}
+
+.pricing-header {
+    padding: 25px 20px 15px;
+}
+
+.pricing-header i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.pricing-header h3 {
+    font-size: 1.3rem;
+}
+
+.pricing-header--light {
+    color: var(--color-primary);
+}
+
+.pricing-header--primary {
+    color: var(--color-accent);
+}
+
+.pricing-header--dark {
+    color: var(--color-primary);
+}
+
+.pricing-price {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    padding: 10px 20px 20px;
+}
+
+.pricing-unit {
+    font-size: 1rem;
+    font-weight: 400;
+    color: #888;
+}
+
+.pricing-features {
+    text-align: left;
+    padding: 0 30px;
+    margin-bottom: 20px;
+}
+
+.pricing-features li {
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.95rem;
+    color: var(--color-text);
+}
+
+.pricing-features li:last-child {
+    border-bottom: none;
+}
+
+.pricing-features i {
+    color: var(--color-accent);
+    margin-right: 8px;
+    font-size: 0.85rem;
+}
+
+.pricing-desc {
+    padding: 0 30px;
+    font-size: 0.85rem;
+    color: #888;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.pricing-card .btn {
+    font-size: 0.95rem;
+}
+
+.pricing-note {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 0.85rem;
+    color: #888;
+}
+
+/* Flow Section */
+.flow-steps {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0;
+}
+
+.flow-step {
+    text-align: center;
+    flex: 1;
+    max-width: 240px;
+    padding: 0 15px;
+    position: relative;
+}
+
+.flow-number {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: var(--color-accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+}
+
+.flow-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background-color: #f0f4f8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+}
+
+.flow-icon i {
+    font-size: 1.8rem;
+    color: var(--color-primary);
+}
+
+.flow-step h3 {
+    font-size: 1.1rem;
+    color: var(--color-primary);
+    margin-bottom: 10px;
+}
+
+.flow-step p {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.7;
+}
+
+.flow-arrow {
+    display: flex;
+    align-items: center;
+    padding-top: 55px;
+    color: var(--color-accent);
+    font-size: 1.2rem;
+}
+
 /* Contact Section */
 .contact-form {
     max-width: 600px;
@@ -525,6 +718,27 @@ h3 {
     .about-usps {
         flex-direction: column;
         gap: 20px;
+    }
+
+    .pricing-grid {
+        grid-template-columns: 1fr;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .flow-steps {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .flow-step {
+        max-width: 100%;
+    }
+
+    .flow-arrow {
+        padding-top: 0;
+        transform: rotate(90deg);
     }
 }
 
