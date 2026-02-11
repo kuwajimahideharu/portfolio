@@ -147,6 +147,7 @@ h3 {
     font-size: 1.5rem;
     color: var(--color-primary);
     font-weight: 700;
+    flex-shrink: 0;
 }
 
 .nav ul {
@@ -766,6 +767,14 @@ h3 {
         display: block;
     }
 
+    .site-logo {
+        height: 32px;
+    }
+
+    .brand-name {
+        font-size: 0.9rem;
+    }
+
     .nav {
         position: fixed;
         top: 0;
@@ -930,9 +939,9 @@ h3 {
 }
 
 .site-logo {
-  height: 50px; /* ヘッダーの高さに合わせて調整してください */
+  height: 40px;
   width: auto;
-  border-radius: 8px; /* 角を少し丸めると親しみやすさが出ます */
+  border-radius: 8px;
   transition: transform 0.3s ease;
 }
 
