@@ -922,3 +922,26 @@ h3 {
     color: var(--color-accent);
     border-color: var(--color-accent);
 }
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* ロゴと文字の間隔 */
+}
+
+.site-logo {
+  height: 50px; /* ヘッダーの高さに合わせて調整してください */
+  width: auto;
+  border-radius: 8px; /* 角を少し丸めると親しみやすさが出ます */
+  transition: transform 0.3s ease;
+}
+
+.site-logo:hover {
+  transform: scale(1.05); /* マウスを乗せた時に少し大きくして「AI感」を演出 */
+}
+
+.brand-name {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #333; /* ロゴのブルーと相性の良い色を選んでください */
+}
