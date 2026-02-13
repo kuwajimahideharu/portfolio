@@ -918,6 +918,18 @@ h3 {
     font-style: italic;
 }
 
+.work-badge-wp {
+    display: inline-block;
+    background: #21759b;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+    letter-spacing: 0.03em;
+}
+
 .btn-link {
     display: inline-block;
     margin-top: 15px;
