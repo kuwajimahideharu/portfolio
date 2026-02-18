@@ -767,6 +767,12 @@ h3 {
     /* X on dark footer should pop */
 }
 
+.sns-icon .note-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    vertical-align: -0.05em;
+}
+
 /* About SNS */
 .about-sns {
     margin-top: 20px;
