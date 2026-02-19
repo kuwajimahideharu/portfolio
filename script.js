@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Contact Form Handling ---
     const contactForm = document.getElementById('contactForm');
     const submitBtn = document.getElementById('submitBtn');
-    const originalBtnText = submitBtn.textContent;
+    const originalBtnText = submitBtn ? submitBtn.textContent : '';
 
     if (contactForm) {
         contactForm.addEventListener('submit', (e) => {
