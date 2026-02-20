@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Webサイト制作 ヒアリングシート | Web係りのおじさん</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --ink-light: #4a4a4a;
+    --ink-muted: #888;
+    --paper: #faf8f4;
+    --paper-warm: #f4f0e8;
+    --accent: #8b5a2b;
+    --accent-light: #c4894a;
+    --accent-pale: #f5ede2;
+    --border: #d4c8b4;
+    --border-light: #e8e0d0;
+    --success: #4a7c59;
+    --error: #8b2b2b;
+    --shadow: rgba(26,20,10,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  /* --- 背景テクスチャ --- */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(139,90,43,0.04) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(139,90,43,0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* --- ヘッダー --- */
+  .site-header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+  }
+
+  .site-header .brand {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--accent-light);
+  }
+
+  .site-header .sep { color: #555; margin: 0 0.5rem; }
+
+  .site-header .page-title {
+    font-size: 0.9rem;
+    color: #aaa;
+    font-weight: 300;
+  }
+
+  /* --- プログレスバー --- */
+  .progress-wrap {
+    background: #333;
+    height: 3px;
+  }
+  .progress-bar {
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-light));
+    width: 0%;
+    transition: width 0.5s ease;
+  }
+
+  /* --- メインコンテナ --- */
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 3rem 2rem 6rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* --- フォームヘッダー --- */
+  .form-hero {
+    text-align: center;
+    margin-bottom: 3.5rem;
+    padding-bottom: 3rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .form-hero .eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .form-hero h1 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 1.2rem;
+    color: var(--ink);
+  }
+
+  .form-hero .lead {
+    font-size: 0.9rem;
+    color: var(--ink-light);
+    max-width: 540px;
+    margin: 0 auto 1.5rem;
+    line-height: 1.8;
+  }
+
+  .form-hero .time-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--accent-pale);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 0.4rem 1.2rem;
+    font-size: 0.8rem;
+    color: var(--accent);
+  }
+
+  /* --- セクション --- */
+  .section {
+    display: none;
+    animation: fadeIn 0.4s ease;
+  }
+  .section.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--accent);
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+  }
+
+  .section-number {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--border);
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  /* --- 質問ブロック --- */
+  .q-block {
+    margin-bottom: 2.2rem;
+    padding: 1.6rem 1.8rem;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 2px 8px var(--shadow);
+    transition: box-shadow 0.2s;
+  }
+
+  .q-block:hover {
+    box-shadow: 0 4px 16px var(--shadow);
+  }
+
+  .q-block:focus-within {
+    border-color: var(--accent-light);
+    box-shadow: 0 0 0 3px rgba(139,90,43,0.1);
+  }
+
+  .q-label {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 0.4rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    line-height: 1.5;
+  }
+
+  .required-badge {
+    flex-shrink: 0;
+    font-size: 0.65rem;
+    background: var(--error);
+    color: white;
+    padding: 0.1em 0.4em;
+    border-radius: 3px;
+    margin-top: 0.15em;
+    font-weight: 400;
+  }
+
+  .q-desc {
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+    margin-bottom: 0.9rem;
+    line-height: 1.6;
+  }
+
+  /* --- 入力要素 --- */
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="date"],
+  input[type="url"],
+  textarea {
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 300;
+    color: var(--ink);
+    background: var(--paper);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  input:focus, textarea:focus {
+    border-color: var(--accent-light);
+    box-shadow: 0 0 0 3px rgba(139,90,43,0.1);
+    background: white;
+  }
+
+  textarea { resize: vertical; min-height: 100px; }
+
+  /* --- ラジオ・チェック --- */
+  .options-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .option-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .option-item:hover { background: var(--accent-pale); }
+
+  .option-item input[type="radio"],
+  .option-item input[type="checkbox"] {
+    width: auto;
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  .option-label {
+    font-size: 0.9rem;
+    color: var(--ink-light);
+    line-height: 1.5;
+    cursor: pointer;
+  }
+
+  .other-input {
+    margin-top: 0.5rem;
+    margin-left: 1.8rem;
+  }
+
+  /* --- 条件付き質問 --- */
+  .conditional {
+    display: none;
+    padding: 1rem 1.2rem;
+    background: var(--accent-pale);
+    border-left: 3px solid var(--accent-light);
+    border-radius: 0 6px 6px 0;
+    margin-top: 0.5rem;
+  }
+  .conditional.show { display: block; }
+  .conditional .q-label { font-size: 0.88rem; }
+
+  /* --- ナビゲーション --- */
+  .nav-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-light);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 2rem;
+    border-radius: 6px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+
+  .btn-prev {
+    background: transparent;
+    color: var(--ink-muted);
+    border: 1px solid var(--border);
+  }
+  .btn-prev:hover {
+    background: var(--paper-warm);
+    color: var(--ink);
+  }
+
+  .btn-next {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 2px 8px rgba(139,90,43,0.3);
+  }
+  .btn-next:hover {
+    background: #7a4d25;
+    box-shadow: 0 4px 16px rgba(139,90,43,0.4);
+    transform: translateY(-1px);
+  }
+
+  .btn-submit {
+    background: var(--success);
+    color: white;
+    box-shadow: 0 2px 8px rgba(74,124,89,0.3);
+  }
+  .btn-submit:hover {
+    background: #3d6b4a;
+    transform: translateY(-1px);
+  }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  .step-indicator {
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+    text-align: center;
+  }
+  .step-indicator span { color: var(--accent); font-weight: 500; }
+
+  /* --- バリデーションエラー --- */
+  .field-error {
+    font-size: 0.78rem;
+    color: var(--error);
+    margin-top: 0.3rem;
+    display: none;
+  }
+  .field-error.show { display: block; }
+  .q-block.has-error input,
+  .q-block.has-error textarea {
+    border-color: var(--error) !important;
+  }
+  .q-block.has-error { border-color: rgba(139,43,43,0.3); }
+
+  /* --- 送信完了 --- */
+  .thank-you {
+    display: none;
+    text-align: center;
+    padding: 4rem 2rem;
+    animation: fadeIn 0.6s ease;
+  }
+  .thank-you.show { display: block; }
+
+  .thank-you .icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .thank-you h2 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--ink);
+  }
+
+  .thank-you p {
+    color: var(--ink-light);
+    font-size: 0.9rem;
+    line-height: 1.8;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+
+  /* --- 送信中オーバーレイ --- */
+  .sending-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(250,248,244,0.9);
+    z-index: 999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+  }
+  .sending-overlay.show { display: flex; }
+
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .sending-text {
+    font-size: 0.9rem;
+    color: var(--ink-light);
+  }
+
+  /* --- レスポンシブ --- */
+  @media (max-width: 600px) {
+    .container { padding: 2rem 1rem 5rem; }
+    .q-block { padding: 1.2rem 1rem; }
+    .site-header { padding: 1rem 1rem; }
+    .site-header .page-title { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<header class="site-header">
+  <div class="brand">Web係りのおじさん</div>
+  <span class="sep">|</span>
+  <div class="page-title">クライアントヒアリングフォーム</div>
+</header>
+<div class="progress-wrap">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<!-- 送信中オーバーレイ -->
+<div class="sending-overlay" id="sendingOverlay">
+  <div class="spinner"></div>
+  <div class="sending-text">送信しています…しばらくお待ちください</div>
+</div>
+
+<div class="container">
+
+  <!-- フォームヘッダー -->
+  <div class="form-hero">
+    <div class="eyebrow">Hearing Sheet</div>
+    <h1>Webサイト制作<br>ヒアリングシート</h1>
+    <p class="lead">
+      ご依頼ありがとうございます。<br>
+      サイト制作にあたり、以下の質問にお答えください。<br>
+      ご記入いただいた内容をもとに、最適なプランをご提案いたします。
+    </p>
+    <div class="time-badge">
+      ⏱ 所要時間：約10〜15分
+    </div>
+  </div>
+
+  <form id="hearingForm" novalidate>
+
+    <!-- ===== Section 1: 基本情報 ===== -->
+    <div class="section active" data-section="1">
+      <div class="section-header">
+        <div class="section-number">01</div>
+        <div class="section-title">基本情報</div>
+      </div>
+
+      <div class="q-block" id="q1-block">
+        <label class="q-label">
+          Q1. 会社名・屋号（個人の場合はお名前）<span class="required-badge">必須</span>
+        </label>
+        <input type="text" id="q1" name="q1" placeholder="例：〇〇株式会社 / 山田太郎" required>
+        <div class="field-error" id="q1-err">会社名・お名前を入力してください。</div>
+      </div>
+
+      <div class="q-block" id="q2-block">
+        <label class="q-label">
+          Q2. ご担当者名<span class="required-badge">必須</span>
+        </label>
+        <input type="text" id="q2" name="q2" placeholder="例：山田 花子" required>
+        <div class="field-error" id="q2-err">ご担当者名を入力してください。</div>
+      </div>
+
+      <div class="q-block" id="q3-block">
+        <label class="q-label">
+          Q3. メールアドレス<span class="required-badge">必須</span>
+        </label>
+        <input type="email" id="q3" name="q3" placeholder="例：hanako@example.com" required>
+        <div class="field-error" id="q3-err">正しいメールアドレスを入力してください。</div>
+      </div>
+
+      <div class="q-block">
+        <label class="q-label">Q4. 電話番号（任意）</label>
+        <input type="tel" id="q4" name="q4" placeholder="例：090-1234-5678">
+      </div>
+
+      <div class="q-block" id="q5-block">
+        <label class="q-label">
+          Q5. 事業内容を教えてください<span class="required-badge">必須</span>
+        </label>
+        <p class="q-desc">どのような商品・サービスを提供されていますか？簡単にご記入ください。</p>
+        <textarea id="q5" name="q5" placeholder="例：東京都内で飲食店を3店舗経営しています。主にランチ営業を中心に…" required></textarea>
+        <div class="field-error" id="q5-err">事業内容を入力してください。</div>
+      </div>
+
+      <div class="q-block" id="q6-block">
+        <label class="q-label">
+          Q6. 最終的にサイトの内容を決定されるのはどなたですか？<span class="required-badge">必須</span>
+        </label>
+        <div class="options-list">
+          <label class="option-item"><input type="radio" name="q6" value="自分自身"><span class="option-label">自分自身</span></label>
+          <label class="option-item"><input type="radio" name="q6" value="上司・経営者"><span class="option-label">上司・経営者</span></label>
+          <label class="option-item"><input type="radio" name="q6" value="複数名で決定"><span class="option-label">複数名で決定</span></label>
+          <label class="option-item">
+            <input type="radio" name="q6" value="その他">
+            <span class="option-label">その他</span>
+          </label>
+        </div>
+        <div class="conditional" id="q6-other-wrap">
+          <label class="q-label">具体的にお書きください</label>
+          <input type="text" id="q6-other" name="q6_other" placeholder="詳細をご記入ください">
+        </div>
+        <div class="field-error" id="q6-err">選択してください。</div>
+      </div>
+
+      <div class="nav-wrap">
+        <div></div>
+        <div style="display:flex;align-items:center;gap:1.5rem;">
+          <div class="step-indicator">セクション <span>1</span> / 8</div>
+          <button type="button" class="btn btn-next" onclick="nextSection(1)">次へ ›</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Section 2: 目的・ターゲット ===== -->
+    <div class="section" data-section="2">
+      <div class="section-header">
+        <div class="section-number">02</div>
+        <div class="section-title">サイトの目的・ターゲット</div>
+      </div>
+
+      <div class="q-block" id="q7-block">
+        <label class="q-label">
+          Q7. サイトを作る一番の目的は何ですか？（複数選択可）<span class="required-badge">必須</span>
+        </label>
+        <div class="options-list">
+          <label class="option-item"><input type="checkbox" name="q7" value="集客・問い合わせを増やしたい"><span class="option-label">集客・問い合わせを増やしたい</span></label>
+          <label class="option-item"><input type="checkbox" name="q7" value="会社やお店の信頼性を高めたい（名刺代わり）"><span class="option-label">会社やお店の信頼性を高めたい（名刺代わり）</span></label>
+          <label class="option-item"><input type="checkbox" name="q7" value="商品・サービスをオンラインで販売したい"><span class="option-label">商品・サービスをオンラインで販売したい</span></label>
+          <label class="option-item"><input type="checkbox" name="q7" value="採用・求人に活用したい"><span class="option-label">採用・求人に活用したい</span></label>
+          <label class="option-item"><input type="checkbox" name="q7" value="ブランドイメージを向上させたい"><span class="option-label">ブランドイメージを向上させたい</span></label>
+          <label class="option-item"><input type="checkbox" name="q7" value="既存サイトが古くなったのでリニューアルしたい"><span class="option-label">既存サイトが古くなったのでリニューアルしたい</span></label>
+          <label class="option-item">
+            <input type="checkbox" name="q7" value="その他">
+            <span class="option-label">その他</span>
+          </label>
+        </div>
+        <div class="conditional" id="q7-other-wrap">
+          <input type="text" id="q7-other" name="q7_other" placeholder="詳細をご記入ください">
+        </div>
+        <div class="field-error" id="q7-err">1つ以上選択してください。</div>
+      </div>
+
+      <div class="q-block" id="q8-block">
+        <label class="q-label">
+          Q8. サイトを見てほしいターゲット層を教えてください<span class="required-badge">必須</span>
+        </label>
+        <p class="q-desc">年齢層、性別、職業、地域など、想定しているお客様像をできるだけ具体的にお書きください。（例：30〜40代の子育て中の女性、東京都内在住）</p>
+        <textarea id="q8" name="q8" required placeholder="例：30〜40代の子育て中の女性、東京都内在住"></textarea>
+        <div class="field-error" id="q8-err">ターゲット層を入力してください。</div>
+      </div>
+
+      <div class="q-block" id="q9-block">
+        <label class="q-label">
+          Q9. サイトを訪れた人に、最終的にどんな行動をしてほしいですか？（複数選択可）<span class="required-badge">必須</span>
+        </label>
+        <div class="options-list">
+          <label class="option-item"><input type="checkbox" name="q9" value="お問い合わせフォームから連絡してほしい"><span class="option-label">お問い合わせフォームから連絡してほしい</span></label>
+          <label class="option-item"><input type="checkbox" name="q9" value="電話をかけてほしい"><span class="option-label">電話をかけてほしい</span></label>
+          <label class="option-item"><input type="checkbox" name="q9" value="商品を購入してほしい"><span class="option-label">商品を購入してほしい</span></label>
+          <label class="option-item"><input type="checkbox" name="q9" value="予約をしてほしい"><span class="option-label">予約をしてほしい</span></label>
+          <label class="option-item"><input type="checkbox" name="q9" value="資料をダウンロードしてほしい"><span class="option-label">資料をダウンロードしてほしい</span></label>
+          <label class="option-item"><input type="checkbox" name="q9" value="SNSをフォローしてほしい"><span class="option-label">SNSをフォローしてほしい</span></label>
+          <label class="option-item"><input type="checkbox" name="q9" value="来店してほしい"><span class="option-label">来店してほしい</span></label>
+          <label class="option-item">
+            <input type="checkbox" name="q9" value="その他">
+            <span class="option-label">その他</span>
+          </label>
+        </div>
+        <div class="conditional" id="q9-other-wrap">
+          <input type="text" id="q9-other" name="q9_other" placeholder="詳細をご記入ください">
+        </div>
+        <div class="field-error" id="q9-err">1つ以上選択してください。</div>
+      </div>
+
+      <div class="nav-wrap">
+        <button type="button" class="btn btn-prev" onclick="prevSection(2)">‹ 前へ</button>
+        <div style="display:flex;align-items:center;gap:1.5rem;">
+          <div class="step-indicator">セクション <span>2</span> / 8</div>
+          <button type="button" class="btn btn-next" onclick="nextSection(2)">次へ ›</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Section 3: 仕様・機能 ===== -->
+    <div class="section" data-section="3">
+      <div class="section-header">
+        <div class="section-number">03</div>
+        <div class="section-title">サイトの仕様・機能</div>
+      </div>
+
+      <div class="q-block" id="q10-block">
+        <label class="q-label">
+          Q10. 既存のWebサイトはありますか？<span class="required-badge">必須</span>
+        </label>
+        <div class="options-list">
+          <label class="option-item"><input type="radio" name="q10" value="ある（リニューアル希望）"><span class="option-label">ある（リニューアル希望）</span></label>
+          <label class="option-item"><input type="radio" name="q10" value="ある（別途新しく作りたい）"><span class="option-label">ある（別途新しく作りたい）</span></label>
+          <label class="option-item"><input type="radio" name="q10" value="ない（新規作成）"><span class="option-label">ない（新規作成）</span></label>
+        </div>
+        <div class="conditional" id="q11-wrap">
+          <label class="q-label">Q11. 既存サイトのURLを教えてください（任意）</label>
+          <input type="url" id="q11" name="q11" placeholder="https://example.com">
+        </div>
+        <div class="field-error" id="q10-err">選択してください。</div>
+      </div>
+
+      <div class="q-block" id="q12-block">
+        <label class="q-label">
+          Q12. 必要なページを教えてください（複数選択可）<span class="required-badge">必須</span>
+        </label>
+        <div class="options-list">
+          <label class="option-item"><input type="checkbox" name="q12" value="トップページ"><span class="option-label">トップページ</span></label>
+          <label class="option-item"><input type="checkbox" name="q12" value="会社概要 / 自己紹介"><span class="option-label">会社概要 / 自己紹介</span></label>
+          <label class="option-item"><input type="checkbox" name="q12" value="サービス・商品紹介"><span class="option-label">サービス・商品紹介</span></label>
+          <label class="option-item"><input type="checkbox" name="q12" value="料金表"><span class="option-label">料金表</span></label>
+          <label class="option-item"><input type="checkbox" name="q12" value="実績・事例紹介"><span class="option-label">実績・事例紹介</span></label>
+          <label class="option-item"><input type="checkbox" name="q12" value="お客様の声"><span class="option-label">お客様の声</span></label>
+          <label class="option-item"><input type="checkbox" name="q12" value="ブログ・お知らせ"><span class="option-label">ブログ・お知らせ</span></label>
+          <label class="option-item"><input type="checkbox" name="q12" value="お問い合わせ"><span class="option-label">お問い合わせ</span></label>
+          <label class="option-item"><input type="checkbox" name="q12" value="アクセス・地図"><span class="option-label">アクセス・地図</span></label>
+          <label class="option-item"><input type="checkbox" name="q12" value="採用情報"><span class="option-label">採用情報</span></label>
+          <label class="option-item"><input type="checkbox" name="q12" value="プライバシーポリシー"><span class="option-label">プライバシーポリシー</span></label>
+          <label class="option-item">
+            <input type="checkbox" name="q12" value="その他">
+            <span class="option-label">その他</span>
+          </label>
+        </div>
+        <div class="conditional" id="q12-other-wrap">
+          <input type="text" name="q12_other" placeholder="詳細をご記入ください">
+        </div>
+        <div class="field-error" id="q12-err">1つ以上選択してください。</div>
+      </div>
+
+      <div class="q-block" id="q13-block">
+        <label class="q-label">
+          Q13. 必要な機能を教えてください（複数選択可）<span class="required-badge">必須</span>
+        </label>
+        <div class="options-list">
+          <label class="option-item"><input type="checkbox" name="q13" value="お問い合わせフォーム"><span class="option-label">お問い合わせフォーム</span></label>
+          <label class="option-item"><input type="checkbox" name="q13" value="ブログ・ニュース更新機能（CMS）"><span class="option-label">ブログ・ニュース更新機能（CMS）</span></label>
+          <label class="option-item"><input type="checkbox" name="q13" value="オンライン予約システム"><span class="option-label">オンライン予約システム</span></label>
+          <label class="option-item"><input type="checkbox" name="q13" value="ECカート（オンライン販売）"><span class="option-label">ECカート（オンライン販売）</span></label>
+          <label class="option-item"><input type="checkbox" name="q13" value="SNS連携（Instagram埋め込みなど）"><span class="option-label">SNS連携（Instagram埋め込みなど）</span></label>
+          <label class="option-item"><input type="checkbox" name="q13" value="Googleマップ埋め込み"><span class="option-label">Googleマップ埋め込み</span></label>
+          <label class="option-item"><input type="checkbox" name="q13" value="写真ギャラリー"><span class="option-label">写真ギャラリー</span></label>
+          <label class="option-item"><input type="checkbox" name="q13" value="動画埋め込み"><span class="option-label">動画埋め込み</span></label>
+          <label class="option-item"><input type="checkbox" name="q13" value="多言語対応"><span class="option-label">多言語対応</span></label>
+          <label class="option-item"><input type="checkbox" name="q13" value="会員ログイン機能"><span class="option-label">会員ログイン機能</span></label>
+          <label class="option-item"><input type="checkbox" name="q13" value="チャット機能"><span class="option-label">チャット機能</span></label>
+          <label class="option-item"><input type="checkbox" name="q13" value="わからない・相談したい"><span class="option-label">わからない・相談したい</span></label>
+          <label class="option-item">
+            <input type="checkbox" name="q13" value="その他">
+            <span class="option-label">その他</span>
+          </label>
+        </div>
+        <div class="conditional" id="q13-other-wrap">
+          <input type="text" name="q13_other" placeholder="詳細をご記入ください">
+        </div>
+        <div class="field-error" id="q13-err">1つ以上選択してください。</div>
+      </div>
+
+      <div class="q-block" id="q14-block">
+        <label class="q-label">
+          Q14. スマートフォンでの閲覧を重視しますか？<span class="required-badge">必須</span>
+        </label>
+        <div class="options-list">
+          <label class="option-item"><input type="radio" name="q14" value="スマホ閲覧がメイン（スマホ最優先で設計してほしい）"><span class="option-label">スマホ閲覧がメイン（スマホ最優先で設計してほしい）</span></label>
+          <label class="option-item"><input type="radio" name="q14" value="PC・スマホ両方を同程度に重視"><span class="option-label">PC・スマホ両方を同程度に重視</span></label>
+          <label class="option-item"><input type="radio" name="q14" value="PC閲覧がメイン"><span class="option-label">PC閲覧がメイン</span></label>
+          <label class="option-item"><input type="radio" name="q14" value="わからない・おまかせ"><span class="option-label">わからない・おまかせ</span></label>
+        </div>
+        <div class="field-error" id="q14-err">選択してください。</div>
+      </div>
+
+      <div class="nav-wrap">
+        <button type="button" class="btn btn-prev" onclick="prevSection(3)">‹ 前へ</button>
+        <div style="display:flex;align-items:center;gap:1.5rem;">
+          <div class="step-indicator">セクション <span>3</span> / 8</div>
+          <button type="button" class="btn btn-next" onclick="nextSection(3)">次へ ›</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Section 4: デザイン・ブランド ===== -->
+    <div class="section" data-section="4">
+      <div class="section-header">
+        <div class="section-number">04</div>
+        <div class="section-title">デザイン・ブランド</div>
+      </div>
+
+      <div class="q-block" id="q15-block">
+        <label class="q-label">
+          Q15. サイトの雰囲気として近いイメージはどれですか？（複数選択可）<span class="required-badge">必須</span>
+        </label>
+        <div class="options-list">
+          <label class="option-item"><input type="checkbox" name="q15" value="シンプル・ミニマル"><span class="option-label">シンプル・ミニマル</span></label>
+          <label class="option-item"><input type="checkbox" name="q15" value="高級感・エレガント"><span class="option-label">高級感・エレガント</span></label>
+          <label class="option-item"><input type="checkbox" name="q15" value="ポップ・カジュアル"><span class="option-label">ポップ・カジュアル</span></label>
+          <label class="option-item"><input type="checkbox" name="q15" value="ナチュラル・温かみのある"><span class="option-label">ナチュラル・温かみのある</span></label>
+          <label class="option-item"><input type="checkbox" name="q15" value="クール・スタイリッシュ"><span class="option-label">クール・スタイリッシュ</span></label>
+          <label class="option-item"><input type="checkbox" name="q15" value="和風・伝統的"><span class="option-label">和風・伝統的</span></label>
+          <label class="option-item"><input type="checkbox" name="q15" value="信頼感・堅実"><span class="option-label">信頼感・堅実</span></label>
+          <label class="option-item">
+            <input type="checkbox" name="q15" value="その他">
+            <span class="option-label">その他</span>
+          </label>
+        </div>
+        <div class="conditional" id="q15-other-wrap">
+          <input type="text" name="q15_other" placeholder="詳細をご記入ください">
+        </div>
+        <div class="field-error" id="q15-err">1つ以上選択してください。</div>
+      </div>
+
+      <div class="q-block">
+        <label class="q-label">Q16. 参考にしたいWebサイトがあればURLを教えてください（最大3つ）（任意）</label>
+        <p class="q-desc">「こんな雰囲気が好き」「このサイトのここが良い」など、コメントもあればお書きください。逆に「こういうのは嫌」という例もあれば参考になります。</p>
+        <textarea id="q16" name="q16" placeholder="例：https://example.com ← シンプルで見やすいデザインが好き&#10;https://sample.jp ← このくらいの情報量が理想"></textarea>
+      </div>
+
+      <div class="q-block" id="q17-block">
+        <label class="q-label">
+          Q17. ロゴはお持ちですか？<span class="required-badge">必須</span>
+        </label>
+        <div class="options-list">
+          <label class="option-item"><input type="radio" name="q17" value="はい（データを提供できる）"><span class="option-label">はい（データを提供できる）</span></label>
+          <label class="option-item"><input type="radio" name="q17" value="はい（ただしデータがない / 古いので作り直したい）"><span class="option-label">はい（ただしデータがない / 古いので作り直したい）</span></label>
+          <label class="option-item"><input type="radio" name="q17" value="いいえ（ロゴの作成も依頼したい）"><span class="option-label">いいえ（ロゴの作成も依頼したい）</span></label>
+          <label class="option-item"><input type="radio" name="q17" value="いいえ（ロゴは不要）"><span class="option-label">いいえ（ロゴは不要）</span></label>
+        </div>
+        <div class="field-error" id="q17-err">選択してください。</div>
+      </div>
+
+      <div class="q-block" id="q18-block">
+        <label class="q-label">
+          Q18. ブランドカラー（会社やお店のイメージカラー）はありますか？<span class="required-badge">必須</span>
+        </label>
+        <div class="options-list">
+          <label class="option-item"><input type="radio" name="q18" value="はい（色を指定したい）"><span class="option-label">はい（色を指定したい）</span></label>
+          <label class="option-item"><input type="radio" name="q18" value="なんとなくある（相談したい）"><span class="option-label">なんとなくある（相談したい）</span></label>
+          <label class="option-item"><input type="radio" name="q18" value="いいえ（おまかせしたい）"><span class="option-label">いいえ（おまかせしたい）</span></label>
+        </div>
+        <div class="conditional" id="q19-wrap">
+          <label class="q-label">Q19. ブランドカラーを教えてください</label>
+          <p class="q-desc">色の名前やカラーコード（例：#FF6600）をご記入ください。</p>
+          <input type="text" id="q19" name="q19" placeholder="例：#FF6600 / 濃い青 / ネイビー">
+        </div>
+        <div class="field-error" id="q18-err">選択してください。</div>
+      </div>
+
+      <div class="nav-wrap">
+        <button type="button" class="btn btn-prev" onclick="prevSection(4)">‹ 前へ</button>
+        <div style="display:flex;align-items:center;gap:1.5rem;">
+          <div class="step-indicator">セクション <span>4</span> / 8</div>
+          <button type="button" class="btn btn-next" onclick="nextSection(4)">次へ ›</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Section 5: コンテンツ・素材 ===== -->
+    <div class="section" data-section="5">
+      <div class="section-header">
+        <div class="section-number">05</div>
+        <div class="section-title">コンテンツ・素材</div>
+      </div>
+
+      <div class="q-block" id="q20-block">
+        <label class="q-label">
+          Q20. サイトに掲載するテキスト（原稿）は誰が用意しますか？<span class="required-badge">必須</span>
+        </label>
+        <div class="options-list">
+          <label class="option-item"><input type="radio" name="q20" value="自分で用意する"><span class="option-label">自分で用意する</span></label>
+          <label class="option-item"><input type="radio" name="q20" value="ある程度の素材は出すので、まとめてほしい"><span class="option-label">ある程度の素材は出すので、まとめてほしい</span></label>
+          <label class="option-item"><input type="radio" name="q20" value="すべてお任せしたい（ライティングも依頼）"><span class="option-label">すべてお任せしたい（ライティングも依頼）</span></label>
+          <label class="option-item"><input type="radio" name="q20" value="相談して決めたい"><span class="option-label">相談して決めたい</span></label>
+        </div>
+        <div class="field-error" id="q20-err">選択してください。</div>
+      </div>
+
+      <div class="q-block" id="q21-block">
+        <label class="q-label">
+          Q21. 写真素材はどうされますか？<span class="required-badge">必須</span>
+        </label>
+        <div class="options-list">
+          <label class="option-item"><input type="radio" name="q21" value="自社で撮影済みの写真を提供できる"><span class="option-label">自社で撮影済みの写真を提供できる</span></label>
+          <label class="option-item"><input type="radio" name="q21" value="プロのカメラマンに撮影を依頼したい"><span class="option-label">プロのカメラマンに撮影を依頼したい</span></label>
+          <label class="option-item"><input type="radio" name="q21" value="フリー素材・ストックフォトでOK"><span class="option-label">フリー素材・ストックフォトでOK</span></label>
+          <label class="option-item"><input type="radio" name="q21" value="相談したい"><span class="option-label">相談したい</span></label>
+        </div>
+        <div class="field-error" id="q21-err">選択してください。</div>
+      </div>
+
+      <div class="q-block" id="q22-block">
+        <label class="q-label">
+          Q22. 動画素材はありますか？または必要ですか？<span class="required-badge">必須</span>
+        </label>
+        <div class="options-list">
+          <label class="option-item"><input type="radio" name="q22" value="動画を持っている（提供できる）"><span class="option-label">動画を持っている（提供できる）</span></label>
+          <label class="option-item"><input type="radio" name="q22" value="動画が必要（撮影や編集も相談したい）"><span class="option-label">動画が必要（撮影や編集も相談したい）</span></label>
+          <label class="option-item"><input type="radio" name="q22" value="動画は不要"><span class="option-label">動画は不要</span></label>
+        </div>
+        <div class="field-error" id="q22-err">選択してください。</div>
+      </div>
+
+      <div class="q-block">
+        <label class="q-label">Q23. SEO（検索エンジン対策）で狙いたいキーワードはありますか？（任意）</label>
+        <p class="q-desc">例：「渋谷 美容室」「名古屋 注文住宅」など、お客様が検索しそうな言葉があればお書きください。わからない場合は空欄でOKです。</p>
+        <textarea id="q23" name="q23" placeholder="例：川崎 ホームページ制作 / 神奈川 飲食店 Web制作"></textarea>
+      </div>
+
+      <div class="nav-wrap">
+        <button type="button" class="btn btn-prev" onclick="prevSection(5)">‹ 前へ</button>
+        <div style="display:flex;align-items:center;gap:1.5rem;">
+          <div class="step-indicator">セクション <span>5</span> / 8</div>
+          <button type="button" class="btn btn-next" onclick="nextSection(5)">次へ ›</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Section 6: 技術・運用 ===== -->
+    <div class="section" data-section="6">
+      <div class="section-header">
+        <div class="section-number">06</div>
+        <div class="section-title">技術・運用</div>
+      </div>
+
+      <div class="q-block" id="q24-block">
+        <label class="q-label">
+          Q24. ドメイン（サイトのURL）はお持ちですか？<span class="required-badge">必須</span>
+        </label>
+        <div class="options-list">
+          <label class="option-item"><input type="radio" name="q24" value="持っている（既存ドメインを使いたい）"><span class="option-label">持っている（既存ドメインを使いたい）</span></label>
+          <label class="option-item"><input type="radio" name="q24" value="持っていない（取得も依頼したい）"><span class="option-label">持っていない（取得も依頼したい）</span></label>
+          <label class="option-item"><input type="radio" name="q24" value="持っていない（自分で取得する）"><span class="option-label">持っていない（自分で取得する）</span></label>
+          <label class="option-item"><input type="radio" name="q24" value="わからない"><span class="option-label">わからない</span></label>
+        </div>
+        <div class="field-error" id="q24-err">選択してください。</div>
+      </div>
+
+      <div class="q-block" id="q25-block">
+        <label class="q-label">
+          Q25. サーバー（レンタルサーバー等）は契約していますか？<span class="required-badge">必須</span>
+        </label>
+        <div class="options-list">
+          <label class="option-item"><input type="radio" name="q25" value="契約している"><span class="option-label">契約している</span></label>
+          <label class="option-item"><input type="radio" name="q25" value="契約していない（おすすめを提案してほしい）"><span class="option-label">契約していない（おすすめを提案してほしい）</span></label>
+          <label class="option-item"><input type="radio" name="q25" value="契約していない（自分で契約する）"><span class="option-label">契約していない（自分で契約する）</span></label>
+          <label class="option-item"><input type="radio" name="q25" value="わからない"><span class="option-label">わからない</span></label>
+        </div>
+        <div class="conditional" id="q25-server-wrap">
+          <label class="q-label">サーバー名を教えてください（任意）</label>
+          <input type="text" id="q25-server" name="q25_server" placeholder="例：エックスサーバー / ConoHa WING">
+        </div>
+        <div class="field-error" id="q25-err">選択してください。</div>
+      </div>
+
+      <div class="q-block" id="q26-block">
+        <label class="q-label">
+          Q26. 公開後のサイト更新・保守について<span class="required-badge">必須</span>
+        </label>
+        <div class="options-list">
+          <label class="option-item"><input type="radio" name="q26" value="自分で更新したい（更新しやすい仕組みにしてほしい）"><span class="option-label">自分で更新したい（更新しやすい仕組みにしてほしい）</span></label>
+          <label class="option-item"><input type="radio" name="q26" value="更新・保守もお願いしたい（月額の保守契約）"><span class="option-label">更新・保守もお願いしたい（月額の保守契約）</span></label>
+          <label class="option-item"><input type="radio" name="q26" value="基本は自分で更新し、大きな変更だけ依頼したい"><span class="option-label">基本は自分で更新し、大きな変更だけ依頼したい</span></label>
+          <label class="option-item"><input type="radio" name="q26" value="まだ決めていない・相談したい"><span class="option-label">まだ決めていない・相談したい</span></label>
+        </div>
+        <div class="field-error" id="q26-err">選択してください。</div>
+      </div>
+
+      <div class="q-block">
+        <label class="q-label">Q27. アクセス解析ツールの導入を希望しますか？（任意）</label>
+        <div class="options-list">
+          <label class="option-item"><input type="checkbox" name="q27" value="Google Analytics"><span class="option-label">Google Analytics</span></label>
+          <label class="option-item"><input type="checkbox" name="q27" value="Google Search Console"><span class="option-label">Google Search Console</span></label>
+          <label class="option-item"><input type="checkbox" name="q27" value="その他のツール"><span class="option-label">その他のツール</span></label>
+          <label class="option-item"><input type="checkbox" name="q27" value="わからない・おすすめを教えてほしい"><span class="option-label">わからない・おすすめを教えてほしい</span></label>
+          <label class="option-item"><input type="checkbox" name="q27" value="不要"><span class="option-label">不要</span></label>
+        </div>
+      </div>
+
+      <div class="nav-wrap">
+        <button type="button" class="btn btn-prev" onclick="prevSection(6)">‹ 前へ</button>
+        <div style="display:flex;align-items:center;gap:1.5rem;">
+          <div class="step-indicator">セクション <span>6</span> / 8</div>
+          <button type="button" class="btn btn-next" onclick="nextSection(6)">次へ ›</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Section 7: 予算・スケジュール ===== -->
+    <div class="section" data-section="7">
+      <div class="section-header">
+        <div class="section-number">07</div>
+        <div class="section-title">予算・スケジュール</div>
+      </div>
+
+      <div class="q-block" id="q28-block">
+        <label class="q-label">
+          Q28. ご予算の目安を教えてください<span class="required-badge">必須</span>
+        </label>
+        <p class="q-desc">あくまで目安で構いません。ご予算に合わせた最適なプランをご提案いたします。</p>
+        <div class="options-list">
+          <label class="option-item"><input type="radio" name="q28" value="〜10万円"><span class="option-label">〜10万円</span></label>
+          <label class="option-item"><input type="radio" name="q28" value="10万円〜30万円"><span class="option-label">10万円〜30万円</span></label>
+          <label class="option-item"><input type="radio" name="q28" value="30万円〜50万円"><span class="option-label">30万円〜50万円</span></label>
+          <label class="option-item"><input type="radio" name="q28" value="50万円〜100万円"><span class="option-label">50万円〜100万円</span></label>
+          <label class="option-item"><input type="radio" name="q28" value="100万円以上"><span class="option-label">100万円以上</span></label>
+          <label class="option-item"><input type="radio" name="q28" value="要件を聞いてから相談したい"><span class="option-label">要件を聞いてから相談したい</span></label>
+        </div>
+        <div class="field-error" id="q28-err">選択してください。</div>
+      </div>
+
+      <div class="q-block" id="q29-block">
+        <label class="q-label">
+          Q29. サイト公開の希望時期を教えてください<span class="required-badge">必須</span>
+        </label>
+        <div class="options-list">
+          <label class="option-item"><input type="radio" name="q29" value="できるだけ早く（1ヶ月以内）"><span class="option-label">できるだけ早く（1ヶ月以内）</span></label>
+          <label class="option-item"><input type="radio" name="q29" value="1〜2ヶ月以内"><span class="option-label">1〜2ヶ月以内</span></label>
+          <label class="option-item"><input type="radio" name="q29" value="2〜3ヶ月以内"><span class="option-label">2〜3ヶ月以内</span></label>
+          <label class="option-item"><input type="radio" name="q29" value="3ヶ月以上先でOK"><span class="option-label">3ヶ月以上先でOK</span></label>
+          <label class="option-item">
+            <input type="radio" name="q29" value="特定の日付に合わせたい">
+            <span class="option-label">特定の日付に合わせたい</span>
+          </label>
+          <label class="option-item"><input type="radio" name="q29" value="特に決まっていない"><span class="option-label">特に決まっていない</span></label>
+        </div>
+        <div class="conditional" id="q30-wrap">
+          <label class="q-label">Q30. 希望の公開日</label>
+          <input type="date" id="q30" name="q30">
+        </div>
+        <div class="field-error" id="q29-err">選択してください。</div>
+      </div>
+
+      <div class="q-block" id="q31-block">
+        <label class="q-label">
+          Q31. お支払い方法のご希望<span class="required-badge">必須</span>
+        </label>
+        <p class="q-desc">着手金として制作費の50%を前払い、納品後に残り50%をお支払いいただく形を基本としています。</p>
+        <div class="options-list">
+          <label class="option-item"><input type="radio" name="q31" value="銀行振込"><span class="option-label">銀行振込</span></label>
+          <label class="option-item"><input type="radio" name="q31" value="クレジットカード"><span class="option-label">クレジットカード</span></label>
+          <label class="option-item"><input type="radio" name="q31" value="その他（相談したい）"><span class="option-label">その他（相談したい）</span></label>
+        </div>
+        <div class="field-error" id="q31-err">選択してください。</div>
+      </div>
+
+      <div class="nav-wrap">
+        <button type="button" class="btn btn-prev" onclick="prevSection(7)">‹ 前へ</button>
+        <div style="display:flex;align-items:center;gap:1.5rem;">
+          <div class="step-indicator">セクション <span>7</span> / 8</div>
+          <button type="button" class="btn btn-next" onclick="nextSection(7)">次へ ›</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Section 8: その他 ===== -->
+    <div class="section" data-section="8">
+      <div class="section-header">
+        <div class="section-number">08</div>
+        <div class="section-title">その他・ご自由にどうぞ</div>
+      </div>
+
+      <div class="q-block">
+        <label class="q-label">Q32. サイト制作にあたって、不安な点や気になることはありますか？（任意）</label>
+        <p class="q-desc">どんな小さなことでも構いません。ご不明点やご要望があればお気軽にお書きください。</p>
+        <textarea id="q32" name="q32" placeholder="例：更新が難しくないか心配です / 費用がどのくらいかかるか気になります"></textarea>
+      </div>
+
+      <div class="q-block">
+        <label class="q-label">Q33. その他、伝えておきたいことがあればご自由にお書きください（任意）</label>
+        <textarea id="q33" name="q33" placeholder="ご自由にお書きください。"></textarea>
+      </div>
+
+      <div class="nav-wrap">
+        <button type="button" class="btn btn-prev" onclick="prevSection(8)">‹ 前へ</button>
+        <div style="display:flex;align-items:center;gap:1.5rem;">
+          <div class="step-indicator">セクション <span>8</span> / 8</div>
+          <button type="button" class="btn btn-submit" onclick="submitForm()">送信する ✓</button>
+        </div>
+      </div>
+    </div>
+
+  </form>
+
+  <!-- 送信完了 -->
+  <div class="thank-you" id="thankYou">
+    <div class="icon">✉️</div>
+    <h2>ご回答ありがとうございました</h2>
+    <p>
+      内容を確認の上、担当者よりご連絡いたします。<br>
+      通常2〜3営業日以内にご連絡いたします。<br><br>
+      <strong>Web係りのおじさん</strong>
+    </p>
+  </div>
+
+</div><!-- /container -->
+
+<!-- EmailJS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+<script>
+// ==========================================
+// ★★★ EmailJS 設定 ★★★
+// EmailJSアカウント登録後、以下3つを設定してください
+// ==========================================
+const EMAILJS_PUBLIC_KEY  = '1lg3JGg4huI7ENX6K';   // ← Public Key
+const EMAILJS_SERVICE_ID  = 'service_fd8y90s';      // ← Service ID
+const EMAILJS_TEMPLATE_ID = 'template_wi7hr0d';     // ← Template ID
+// ==========================================
+
+emailjs.init(EMAILJS_PUBLIC_KEY);
+
+const TOTAL_SECTIONS = 8;
+
+// --- プログレスバー更新 ---
+function updateProgress(section) {
+  const pct = ((section - 1) / TOTAL_SECTIONS) * 100;
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+// --- セクション切替 ---
+function showSection(num) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  const target = document.querySelector(`[data-section="${num}"]`);
+  if (target) {
+    target.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    updateProgress(num);
+  }
+}
+
+// --- バリデーション ---
+function validateSection(num) {
+  let valid = true;
+
+  const checks = {
+    1: [
+      { id: 'q1', type: 'text' },
+      { id: 'q2', type: 'text' },
+      { id: 'q3', type: 'email' },
+      { id: 'q5', type: 'text' },
+      { id: 'q6', type: 'radio', name: 'q6' },
+    ],
+    2: [
+      { id: 'q7', type: 'checkbox', name: 'q7' },
+      { id: 'q8', type: 'text' },
+      { id: 'q9', type: 'checkbox', name: 'q9' },
+    ],
+    3: [
+      { id: 'q10', type: 'radio', name: 'q10' },
+      { id: 'q12', type: 'checkbox', name: 'q12' },
+      { id: 'q13', type: 'checkbox', name: 'q13' },
+      { id: 'q14', type: 'radio', name: 'q14' },
+    ],
+    4: [
+      { id: 'q15', type: 'checkbox', name: 'q15' },
+      { id: 'q17', type: 'radio', name: 'q17' },
+      { id: 'q18', type: 'radio', name: 'q18' },
+    ],
+    5: [
+      { id: 'q20', type: 'radio', name: 'q20' },
+      { id: 'q21', type: 'radio', name: 'q21' },
+      { id: 'q22', type: 'radio', name: 'q22' },
+    ],
+    6: [
+      { id: 'q24', type: 'radio', name: 'q24' },
+      { id: 'q25', type: 'radio', name: 'q25' },
+      { id: 'q26', type: 'radio', name: 'q26' },
+    ],
+    7: [
+      { id: 'q28', type: 'radio', name: 'q28' },
+      { id: 'q29', type: 'radio', name: 'q29' },
+      { id: 'q31', type: 'radio', name: 'q31' },
+    ],
+    8: []
+  };
+
+  const fields = checks[num] || [];
+
+  fields.forEach(f => {
+    const errEl = document.getElementById(f.id + '-err');
+    const block = document.getElementById(f.id + '-block');
+    let ok = false;
+
+    if (f.type === 'radio') {
+      ok = !!document.querySelector(`input[name="${f.name}"]:checked`);
+    } else if (f.type === 'checkbox') {
+      ok = document.querySelectorAll(`input[name="${f.name}"]:checked`).length > 0;
+    } else if (f.type === 'email') {
+      const v = document.getElementById(f.id).value.trim();
+      ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    } else {
+      ok = document.getElementById(f.id).value.trim() !== '';
+    }
+
+    if (errEl) {
+      errEl.classList.toggle('show', !ok);
+    }
+    if (block) {
+      block.classList.toggle('has-error', !ok);
+    }
+    if (!ok) valid = false;
+  });
+
+  return valid;
+}
+
+function nextSection(current) {
+  if (!validateSection(current)) {
+    // エラーのある最初の要素へスクロール
+    const firstError = document.querySelector('.field-error.show');
+    if (firstError) {
+      firstError.closest('.q-block')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    return;
+  }
+  if (current < TOTAL_SECTIONS) showSection(current + 1);
+}
+
+function prevSection(current) {
+  if (current > 1) showSection(current - 1);
+}
+
+// --- 条件分岐の表示制御 ---
+document.querySelectorAll('input[name="q6"]').forEach(r => {
+  r.addEventListener('change', () => {
+    document.getElementById('q6-other-wrap').classList.toggle('show', r.value === 'その他' && r.checked);
+  });
+});
+
+['q7', 'q9', 'q12', 'q13', 'q15'].forEach(name => {
+  document.querySelectorAll(`input[name="${name}"]`).forEach(cb => {
+    cb.addEventListener('change', () => {
+      const hasOther = !!document.querySelector(`input[name="${name}"][value="その他"]:checked`);
+      const wrap = document.getElementById(`${name}-other-wrap`);
+      if (wrap) wrap.classList.toggle('show', hasOther);
+    });
+  });
+});
+
+document.querySelectorAll('input[name="q10"]').forEach(r => {
+  r.addEventListener('change', () => {
+    const hasExisting = ['ある（リニューアル希望）', 'ある（別途新しく作りたい）'].includes(r.value);
+    document.getElementById('q11-wrap').classList.toggle('show', hasExisting && r.checked);
+  });
+});
+
+document.querySelectorAll('input[name="q18"]').forEach(r => {
+  r.addEventListener('change', () => {
+    document.getElementById('q19-wrap').classList.toggle('show', r.value === 'はい（色を指定したい）' && r.checked);
+  });
+});
+
+document.querySelectorAll('input[name="q25"]').forEach(r => {
+  r.addEventListener('change', () => {
+    document.getElementById('q25-server-wrap').classList.toggle('show', r.value === '契約している' && r.checked);
+  });
+});
+
+document.querySelectorAll('input[name="q29"]').forEach(r => {
+  r.addEventListener('change', () => {
+    document.getElementById('q30-wrap').classList.toggle('show', r.value === '特定の日付に合わせたい' && r.checked);
+  });
+});
+
+// --- フォームデータ収集 ---
+function collectFormData() {
+  const getVal = id => {
+    const el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+  };
+
+  const getRadio = name => {
+    const el = document.querySelector(`input[name="${name}"]:checked`);
+    return el ? el.value : '（未選択）';
+  };
+
+  const getCheckbox = name => {
+    const checked = document.querySelectorAll(`input[name="${name}"]:checked`);
+    return checked.length > 0 ? Array.from(checked).map(e => e.value).join('、') : '（未選択）';
+  };
+
+  return {
+    // Section 1
+    q1:  getVal('q1'),
+    q2:  getVal('q2'),
+    q3:  getVal('q3'),
+    q4:  getVal('q4') || '（記入なし）',
+    q5:  getVal('q5'),
+    q6:  getRadio('q6') + (getVal('q6-other') ? `（${getVal('q6-other')}）` : ''),
+    // Section 2
+    q7:  getCheckbox('q7'),
+    q8:  getVal('q8'),
+    q9:  getCheckbox('q9'),
+    // Section 3
+    q10: getRadio('q10'),
+    q11: getVal('q11') || '（なし）',
+    q12: getCheckbox('q12'),
+    q13: getCheckbox('q13'),
+    q14: getRadio('q14'),
+    // Section 4
+    q15: getCheckbox('q15'),
+    q16: getVal('q16') || '（記入なし）',
+    q17: getRadio('q17'),
+    q18: getRadio('q18'),
+    q19: getVal('q19') || '（記入なし）',
+    // Section 5
+    q20: getRadio('q20'),
+    q21: getRadio('q21'),
+    q22: getRadio('q22'),
+    q23: getVal('q23') || '（記入なし）',
+    // Section 6
+    q24: getRadio('q24'),
+    q25: getRadio('q25') + (getVal('q25-server') ? `（${getVal('q25-server')}）` : ''),
+    q26: getRadio('q26'),
+    q27: getCheckbox('q27') || '（未選択）',
+    // Section 7
+    q28: getRadio('q28'),
+    q29: getRadio('q29'),
+    q30: getVal('q30') || '（指定なし）',
+    q31: getRadio('q31'),
+    // Section 8
+    q32: getVal('q32') || '（記入なし）',
+    q33: getVal('q33') || '（記入なし）',
+  };
+}
+
+// --- 送信処理 ---
+async function submitForm() {
+  if (!validateSection(8)) return;
+
+  const overlay = document.getElementById('sendingOverlay');
+  overlay.classList.add('show');
+
+  const data = collectFormData();
+
+  try {
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_name: 'ひではるさん',
+      from_name: data.q2,
+      company:  data.q1,
+      email:    data.q3,
+      // 全質問データを文字列としてテンプレートへ渡す
+      answers: formatAnswers(data),
+      reply_to: data.q3,
+    });
+
+    overlay.classList.remove('show');
+    document.getElementById('hearingForm').style.display = 'none';
+    document.querySelector('.form-hero').style.display = 'none';
+    document.getElementById('thankYou').classList.add('show');
+    document.getElementById('progressBar').style.width = '100%';
+
+  } catch (err) {
+    overlay.classList.remove('show');
+    alert('送信中にエラーが発生しました。\nお手数ですが、直接メールにてご連絡ください。\n\nエラー: ' + JSON.stringify(err));
+    console.error('EmailJS error:', err);
+  }
+}
+
+function formatAnswers(d) {
+  return `
+■ セクション1：基本情報
+Q1. 会社名・屋号: ${d.q1}
+Q2. ご担当者名: ${d.q2}
+Q3. メールアドレス: ${d.q3}
+Q4. 電話番号: ${d.q4}
+Q5. 事業内容: ${d.q5}
+Q6. 意思決定者: ${d.q6}
+
+■ セクション2：サイトの目的・ターゲット
+Q7. サイトの目的: ${d.q7}
+Q8. ターゲット層: ${d.q8}
+Q9. 期待するアクション: ${d.q9}
+
+■ セクション3：サイトの仕様・機能
+Q10. 既存サイト: ${d.q10}
+Q11. 既存サイトURL: ${d.q11}
+Q12. 必要なページ: ${d.q12}
+Q13. 必要な機能: ${d.q13}
+Q14. スマホ対応: ${d.q14}
+
+■ セクション4：デザイン・ブランド
+Q15. サイトのイメージ: ${d.q15}
+Q16. 参考サイト: ${d.q16}
+Q17. ロゴ: ${d.q17}
+Q18. ブランドカラー: ${d.q18}
+Q19. カラー詳細: ${d.q19}
+
+■ セクション5：コンテンツ・素材
+Q20. テキスト原稿: ${d.q20}
+Q21. 写真素材: ${d.q21}
+Q22. 動画素材: ${d.q22}
+Q23. SEOキーワード: ${d.q23}
+
+■ セクション6：技術・運用
+Q24. ドメイン: ${d.q24}
+Q25. サーバー: ${d.q25}
+Q26. 更新・保守: ${d.q26}
+Q27. アクセス解析: ${d.q27}
+
+■ セクション7：予算・スケジュール
+Q28. ご予算: ${d.q28}
+Q29. 希望公開時期: ${d.q29}
+Q30. 希望公開日: ${d.q30}
+Q31. お支払い方法: ${d.q31}
+
+■ セクション8：その他
+Q32. 不安・気になること: ${d.q32}
+Q33. その他ご連絡事項: ${d.q33}
+`.trim();
+}
+
+// --- 初期化 ---
+updateProgress(1);
+</script>
+</body>
+</html>
