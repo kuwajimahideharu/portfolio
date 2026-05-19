@@ -492,7 +492,7 @@ h3 {
 /* Pricing Section */
 .pricing-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 30px;
     align-items: start;
 }
@@ -607,6 +607,71 @@ h3 {
     margin-top: 40px;
     font-size: 0.85rem;
     color: #888;
+}
+
+/* AI Support Section */
+.ai-support-lead {
+    text-align: center;
+    font-size: 1rem;
+    color: #555;
+    line-height: 1.9;
+    margin-bottom: 44px;
+}
+
+.ai-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 24px;
+    margin-bottom: 50px;
+}
+
+.ai-card {
+    background: var(--color-bg-light);
+    border-radius: 12px;
+    padding: 30px 24px;
+    text-align: center;
+    border: 1px solid #eee;
+    transition: transform 0.3s, border-color 0.3s;
+}
+
+.ai-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-accent);
+}
+
+.ai-card-icon {
+    font-size: 2.4rem;
+    color: var(--color-accent);
+    margin-bottom: 16px;
+}
+
+.ai-card h3 {
+    font-size: 1rem;
+    color: var(--color-primary);
+    margin-bottom: 12px;
+    line-height: 1.6;
+}
+
+.ai-card p {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.75;
+}
+
+.ai-support-cta {
+    text-align: center;
+    padding: 10px 0 10px;
+}
+
+.ai-support-cta p {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 24px;
+}
+
+/* AI Pricing header */
+.pricing-header--ai {
+    color: var(--color-accent);
 }
 
 /* Flow Section */
