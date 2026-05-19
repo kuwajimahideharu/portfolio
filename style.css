@@ -767,7 +767,8 @@ h3 {
     /* X on dark footer should pop */
 }
 
-.sns-icon .note-icon {
+.sns-icon .note-icon,
+.sns-icon .substack-icon {
     width: 1.5rem;
     height: 1.5rem;
     vertical-align: -0.05em;
