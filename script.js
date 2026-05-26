@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
             params.append('email',   formData.get('email'));
             params.append('message', formData.get('message'));
 
-            fetch('https://script.google.com/macros/s/AKfycbz_i05jyXzeHqKwUh_JM5C1Rssxw1CyLK_Dyorryg-iLPpzZAnAJAXmDDK-iHtIRwFZLg/exec', {
+            fetch('https://script.google.com/macros/s/AKfycbw-cXs_OPCtRIhRm7wSYge3T1FD-QDofVwVFjM3QdrpAdNmoO-Dwr3hQjiGpzlv88JHIA/exec', {
                 method: 'POST',
                 body: params,
                 mode: 'no-cors'
