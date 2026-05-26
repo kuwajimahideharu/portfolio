@@ -63,10 +63,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const formData = new FormData(contactForm);
 
-            // mode: 'no-cors' で CORS エラーを回避（GAS は実行ログで確認済み）
+            // URLSearchParams に変換（GAS の e.parameter で確実に受け取るため）
+            const params = new URLSearchParams();
+            params.append('name',    formData.get('name'));
+            params.append('email',   formData.get('email'));
+            params.append('message', formData.get('message'));
+
             fetch('https://script.google.com/macros/s/AKfycbz_i05jyXzeHqKwUh_JM5C1Rssxw1CyLK_Dyorryg-iLPpzZAnAJAXmDDK-iHtIRwFZLg/exec', {
                 method: 'POST',
-                body: formData,
+                body: params,
                 mode: 'no-cors'
             })
                 .then(() => {
