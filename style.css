@@ -741,6 +741,19 @@ h3 {
 }
 
 /* Contact Section */
+.contact-notice {
+    max-width: 600px;
+    margin: 0 auto 24px;
+    padding: 14px 20px;
+    background: rgba(255, 255, 255, 0.08);
+    border-left: 3px solid var(--color-accent);
+    border-radius: 4px;
+    color: #ccc;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    text-align: center;
+}
+
 .contact-form {
     max-width: 600px;
     margin: 0 auto;
