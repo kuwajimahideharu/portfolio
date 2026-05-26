@@ -63,31 +63,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const formData = new FormData(contactForm);
 
+            // mode: 'no-cors' で CORS エラーを回避（GAS は実行ログで確認済み）
             fetch('https://script.google.com/macros/s/AKfycbz_i05jyXzeHqKwUh_JM5C1Rssxw1CyLK_Dyorryg-iLPpzZAnAJAXmDDK-iHtIRwFZLg/exec', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                mode: 'no-cors'
             })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.result === 'success') {
-                        // alertの代わりに、フォームを消してメッセージを表示する
-                        contactForm.innerHTML = `
+                .then(() => {
+                    contactForm.innerHTML = `
         <div class="success-message" style="text-align:center; padding: 40px 0;">
             <i class="fa-regular fa-circle-check" style="font-size: 4rem; color: #c5a059; margin-bottom: 20px; display:block;"></i>
             <h3 style="color: #1a365d;">お問い合わせありがとうございます！</h3>
             <p>内容を確認し、24時間以内にご連絡いたします。</p>
         </div>
     `;
-                    }
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     alert('送信エラーが発生しました。');
-                })
-                .finally(() => {
-                    // Reset button state
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = originalBtnText;
                 });
         });
     }
