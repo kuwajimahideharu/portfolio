@@ -237,6 +237,14 @@ h3 {
     padding-top: 70px;
 }
 
+.hero-mascot {
+    display: block;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 4px;
+    animation: mascot-bob 3s ease-in-out infinite;
+}
+
 .hero-sub {
     color: var(--color-accent);
     font-weight: 700;
@@ -809,10 +817,31 @@ h3 {
 }
 
 .ai-card h3 {
+    font-family: 'Yomogi', cursive;
+    position: relative;
+    display: inline-block;
+    background: #fff8e7;
+    border: 2px solid #e7c97a;
+    color: #6b5a2e;
     font-size: 1rem;
-    color: var(--color-primary);
-    margin-bottom: 12px;
-    line-height: 1.6;
+    font-weight: 400;
+    margin: 0 auto 18px;
+    padding: 10px 16px;
+    border-radius: 16px;
+    line-height: 1.5;
+}
+
+.ai-card h3::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -8px;
+    width: 14px;
+    height: 14px;
+    background: #fff8e7;
+    border-right: 2px solid #e7c97a;
+    border-bottom: 2px solid #e7c97a;
+    transform: translateX(-50%) rotate(45deg);
 }
 
 .ai-card p {

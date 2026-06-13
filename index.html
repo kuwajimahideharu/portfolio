@@ -170,6 +170,64 @@
 
 <body>
 
+    <!-- おじさんキャラ（共通定義：ヒーロー／お手伝いセクションで使い回し） -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+        <symbol id="ojisan-mascot" viewBox="0 0 200 200">
+            <g fill="none" stroke="#5a4632" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <!-- 首 -->
+                <rect x="88" y="132" width="24" height="20" rx="6" fill="#fcdcb6"/>
+                <!-- 体（ネイビーのポロシャツ） -->
+                <path d="M42 200 Q42 152 100 150 Q158 152 158 200" fill="#1a365d"/>
+                <!-- えり -->
+                <path d="M100 150 L86 166 L100 172 Z" fill="#ffffff"/>
+                <path d="M100 150 L114 166 L100 172 Z" fill="#ffffff"/>
+                <!-- 手をふる腕 -->
+                <path d="M152 158 Q172 146 170 120" stroke="#1a365d" stroke-width="9"/>
+                <circle cx="170" cy="112" r="11" fill="#fcdcb6"/>
+                <g stroke="#c9a24a" stroke-width="2.5">
+                    <path d="M184 100 q6 3 5 9"/>
+                    <path d="M188 108 q6 4 4 10"/>
+                </g>
+                <!-- もみあげ・サイドの髪 -->
+                <path d="M57 64 Q44 86 60 108 Q53 84 64 66 Z" fill="#b9bdc4" stroke="#8a8f97"/>
+                <path d="M143 64 Q156 86 140 108 Q147 84 136 66 Z" fill="#b9bdc4" stroke="#8a8f97"/>
+                <!-- 耳 -->
+                <circle cx="55" cy="86" r="8" fill="#fcdcb6"/>
+                <circle cx="145" cy="86" r="8" fill="#fcdcb6"/>
+                <!-- 顔 -->
+                <ellipse cx="100" cy="82" rx="46" ry="44" fill="#fcdcb6"/>
+                <!-- 頭頂の髪（うすめ） -->
+                <g stroke="#8a8f97" stroke-width="3">
+                    <path d="M80 40 q6 -8 14 -4"/>
+                    <path d="M100 36 q6 -7 14 -2"/>
+                    <path d="M118 42 q6 -6 12 0"/>
+                </g>
+                <!-- ほっぺ -->
+                <ellipse cx="66" cy="100" rx="8" ry="5.5" fill="#ff9aa2" stroke="none" opacity="0.55"/>
+                <ellipse cx="134" cy="100" rx="8" ry="5.5" fill="#ff9aa2" stroke="none" opacity="0.55"/>
+                <!-- まゆ -->
+                <path d="M72 64 Q82 60 92 64"/>
+                <path d="M108 64 Q118 60 128 64"/>
+                <!-- メガネ -->
+                <g stroke="#3a3f47" stroke-width="3">
+                    <circle cx="82" cy="84" r="15" fill="#ffffff" fill-opacity="0.35"/>
+                    <circle cx="118" cy="84" r="15" fill="#ffffff" fill-opacity="0.35"/>
+                    <path d="M97 84 q3 -4 6 0"/>
+                    <path d="M67 80 L57 84"/>
+                    <path d="M133 80 L143 84"/>
+                </g>
+                <!-- にこにこの目 -->
+                <path d="M75 85 Q82 93 89 85"/>
+                <path d="M111 85 Q118 93 125 85"/>
+                <!-- 鼻 -->
+                <path d="M99 92 q-3 8 1 11"/>
+                <!-- 口（にっこり） -->
+                <path d="M81 110 Q100 134 119 110 Z" fill="#cf6a82"/>
+                <path d="M81 110 Q100 117 119 110 Z" fill="#ffffff" stroke="none"/>
+            </g>
+        </symbol>
+    </svg>
+
     <!-- Header -->
     <header class="header">
         <div class="container">
@@ -200,6 +258,7 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="container hero-content fade-in-up">
+            <svg class="hero-mascot" role="img" aria-label="Web係のおじさんのイラスト"><use href="#ojisan-mascot"/></svg>
             <p class="hero-sub">Web係のおじさん</p>
             <h2 class="hero-title">Webサイトも、AIの相談も。<br>なんでもどうぞ。</h2>
             <p class="hero-text">「AIって、なんだか難しそう…」を、「なんだ、こんなことか！」に。</p>
@@ -296,60 +355,7 @@
             </div>
             <p class="help-lead fade-in-up">「AI」と聞くと身構えてしまうかもしれません。でも大丈夫。<br>日々の『めんどくさい』『どうやるの?』を、いっしょに片づけるお手伝いです。</p>
             <div class="help-mascot fade-in-up">
-                <svg class="mascot-svg" viewBox="0 0 200 200" role="img" aria-label="Web係のおじさんのイラスト" xmlns="http://www.w3.org/2000/svg">
-                    <g fill="none" stroke="#5a4632" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                        <!-- 首 -->
-                        <rect x="88" y="132" width="24" height="20" rx="6" fill="#fcdcb6"/>
-                        <!-- 体（ネイビーのポロシャツ） -->
-                        <path d="M42 200 Q42 152 100 150 Q158 152 158 200" fill="#1a365d"/>
-                        <!-- えり -->
-                        <path d="M100 150 L86 166 L100 172 Z" fill="#ffffff"/>
-                        <path d="M100 150 L114 166 L100 172 Z" fill="#ffffff"/>
-                        <!-- 手をふる腕 -->
-                        <path d="M152 158 Q172 146 170 120" stroke="#1a365d" stroke-width="9"/>
-                        <circle cx="170" cy="112" r="11" fill="#fcdcb6"/>
-                        <g stroke="#c9a24a" stroke-width="2.5">
-                            <path d="M184 100 q6 3 5 9"/>
-                            <path d="M188 108 q6 4 4 10"/>
-                        </g>
-                        <!-- もみあげ・サイドの髪 -->
-                        <path d="M57 64 Q44 86 60 108 Q53 84 64 66 Z" fill="#b9bdc4" stroke="#8a8f97"/>
-                        <path d="M143 64 Q156 86 140 108 Q147 84 136 66 Z" fill="#b9bdc4" stroke="#8a8f97"/>
-                        <!-- 耳 -->
-                        <circle cx="55" cy="86" r="8" fill="#fcdcb6"/>
-                        <circle cx="145" cy="86" r="8" fill="#fcdcb6"/>
-                        <!-- 顔 -->
-                        <ellipse cx="100" cy="82" rx="46" ry="44" fill="#fcdcb6"/>
-                        <!-- 頭頂の髪（うすめ） -->
-                        <g stroke="#8a8f97" stroke-width="3">
-                            <path d="M80 40 q6 -8 14 -4"/>
-                            <path d="M100 36 q6 -7 14 -2"/>
-                            <path d="M118 42 q6 -6 12 0"/>
-                        </g>
-                        <!-- ほっぺ -->
-                        <ellipse cx="66" cy="100" rx="8" ry="5.5" fill="#ff9aa2" stroke="none" opacity="0.55"/>
-                        <ellipse cx="134" cy="100" rx="8" ry="5.5" fill="#ff9aa2" stroke="none" opacity="0.55"/>
-                        <!-- まゆ -->
-                        <path d="M72 64 Q82 60 92 64"/>
-                        <path d="M108 64 Q118 60 128 64"/>
-                        <!-- メガネ -->
-                        <g stroke="#3a3f47" stroke-width="3">
-                            <circle cx="82" cy="84" r="15" fill="#ffffff" fill-opacity="0.35"/>
-                            <circle cx="118" cy="84" r="15" fill="#ffffff" fill-opacity="0.35"/>
-                            <path d="M97 84 q3 -4 6 0"/>
-                            <path d="M67 80 L57 84"/>
-                            <path d="M133 80 L143 84"/>
-                        </g>
-                        <!-- にこにこの目 -->
-                        <path d="M75 85 Q82 93 89 85"/>
-                        <path d="M111 85 Q118 93 125 85"/>
-                        <!-- 鼻 -->
-                        <path d="M99 92 q-3 8 1 11"/>
-                        <!-- 口（にっこり） -->
-                        <path d="M81 110 Q100 134 119 110 Z" fill="#cf6a82"/>
-                        <path d="M81 110 Q100 117 119 110 Z" fill="#ffffff" stroke="none"/>
-                    </g>
-                </svg>
+                <svg class="mascot-svg" role="img" aria-label="Web係のおじさんのイラスト"><use href="#ojisan-mascot"/></svg>
                 <div class="mascot-bubble">なんでも聞いてね。<br>いっしょに片づけよう！</div>
             </div>
             <div class="help-grid">
@@ -634,10 +640,10 @@
                     <ul class="pricing-features">
                         <li><i class="fa-solid fa-check"></i>オンライン相談（60分）</li>
                         <li><i class="fa-solid fa-check"></i>AIツール体験・ハンズオン</li>
-                        <li><i class="fa-solid fa-check"></i>おすすめツールのご提案</li>
-                        <li><i class="fa-solid fa-check"></i>相談後メールフォロー</li>
+                        <li><i class="fa-solid fa-check"></i>文章・SNS・メールづくりも一緒に</li>
+                        <li><i class="fa-solid fa-check"></i>おすすめツールのご提案・メールフォロー</li>
                     </ul>
-                    <p class="pricing-desc">「まず話を聞いてみたい」「どこから始めればいい?」という方のための入口プランです。</p>
+                    <p class="pricing-desc">「まず話を聞いてみたい」「チラシやSNSの文章を手伝ってほしい」という方の入口プランです。</p>
                     <a href="#contact" class="btn btn-gold">相談してみる</a>
                 </div>
 
@@ -691,7 +697,7 @@
                     <a href="#contact" class="btn btn-primary">相談してみる</a>
                 </div>
             </div>
-            <p class="pricing-note fade-in-up">※ 上記は目安です。内容やページ数によって変動します。文章づくりやSNSなどのお手伝いは、内容に応じてご相談ください。</p>
+            <p class="pricing-note fade-in-up">※ 上記は目安です。内容やページ数によって変動します。<br>チラシ・SNS・メールなど文章づくりの単発のお手伝いは「AI相談プラン（3,000円〜）」で承ります。継続的なサポートをご希望の場合は、内容に応じてお見積もりしますのでお気軽にご相談ください。</p>
         </div>
     </section>
 
