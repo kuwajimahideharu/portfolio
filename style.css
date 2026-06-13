@@ -638,10 +638,102 @@ h3 {
     transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
 }
 
+.help-card:nth-child(odd) {
+    transform: rotate(-0.7deg);
+}
+
+.help-card:nth-child(even) {
+    transform: rotate(0.7deg);
+}
+
 .help-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-4px) rotate(0deg);
     border-color: var(--color-accent);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* お客さんの声のふきだし */
+.help-bubble {
+    font-family: 'Yomogi', cursive;
+    position: relative;
+    display: inline-block;
+    background: #fff8e7;
+    border: 2px solid #e7c97a;
+    color: #6b5a2e;
+    font-size: 0.95rem;
+    line-height: 1.45;
+    padding: 8px 16px;
+    margin: 0 auto 16px;
+    border-radius: 16px;
+}
+
+.help-bubble::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -8px;
+    width: 14px;
+    height: 14px;
+    background: #fff8e7;
+    border-right: 2px solid #e7c97a;
+    border-bottom: 2px solid #e7c97a;
+    transform: translateX(-50%) rotate(45deg);
+}
+
+/* おじさんキャラ＋ふきだし */
+.help-mascot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 48px;
+}
+
+.mascot-svg {
+    width: 150px;
+    height: 150px;
+    flex-shrink: 0;
+    animation: mascot-bob 3s ease-in-out infinite;
+}
+
+@keyframes mascot-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+.mascot-bubble {
+    font-family: 'Yomogi', cursive;
+    position: relative;
+    background: #fff;
+    border: 2.5px solid var(--color-primary);
+    border-radius: 22px;
+    padding: 18px 24px;
+    font-size: 1.15rem;
+    line-height: 1.6;
+    color: var(--color-primary);
+    max-width: 320px;
+}
+
+.mascot-bubble::after {
+    content: '';
+    position: absolute;
+    left: -11px;
+    top: 50%;
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border-left: 2.5px solid var(--color-primary);
+    border-bottom: 2.5px solid var(--color-primary);
+    transform: translateY(-50%) rotate(45deg);
+}
+
+@media (max-width: 768px) {
+    .mascot-bubble::after {
+        left: 50%;
+        top: -11px;
+        transform: translateX(-50%) rotate(135deg);
+    }
 }
 
 .help-card-icon {

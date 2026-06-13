@@ -160,7 +160,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Roboto:wght@400;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Roboto:wght@400;700&family=Yomogi&display=swap"
         rel="stylesheet">
     <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="style.css">
@@ -295,34 +295,97 @@
                 <p class="section-subtitle">ホームページ作りは、その中のひとつ。</p>
             </div>
             <p class="help-lead fade-in-up">「AI」と聞くと身構えてしまうかもしれません。でも大丈夫。<br>日々の『めんどくさい』『どうやるの?』を、いっしょに片づけるお手伝いです。</p>
+            <div class="help-mascot fade-in-up">
+                <svg class="mascot-svg" viewBox="0 0 200 200" role="img" aria-label="Web係のおじさんのイラスト" xmlns="http://www.w3.org/2000/svg">
+                    <g fill="none" stroke="#5a4632" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <!-- 首 -->
+                        <rect x="88" y="132" width="24" height="20" rx="6" fill="#fcdcb6"/>
+                        <!-- 体（ネイビーのポロシャツ） -->
+                        <path d="M42 200 Q42 152 100 150 Q158 152 158 200" fill="#1a365d"/>
+                        <!-- えり -->
+                        <path d="M100 150 L86 166 L100 172 Z" fill="#ffffff"/>
+                        <path d="M100 150 L114 166 L100 172 Z" fill="#ffffff"/>
+                        <!-- 手をふる腕 -->
+                        <path d="M152 158 Q172 146 170 120" stroke="#1a365d" stroke-width="9"/>
+                        <circle cx="170" cy="112" r="11" fill="#fcdcb6"/>
+                        <g stroke="#c9a24a" stroke-width="2.5">
+                            <path d="M184 100 q6 3 5 9"/>
+                            <path d="M188 108 q6 4 4 10"/>
+                        </g>
+                        <!-- もみあげ・サイドの髪 -->
+                        <path d="M57 64 Q44 86 60 108 Q53 84 64 66 Z" fill="#b9bdc4" stroke="#8a8f97"/>
+                        <path d="M143 64 Q156 86 140 108 Q147 84 136 66 Z" fill="#b9bdc4" stroke="#8a8f97"/>
+                        <!-- 耳 -->
+                        <circle cx="55" cy="86" r="8" fill="#fcdcb6"/>
+                        <circle cx="145" cy="86" r="8" fill="#fcdcb6"/>
+                        <!-- 顔 -->
+                        <ellipse cx="100" cy="82" rx="46" ry="44" fill="#fcdcb6"/>
+                        <!-- 頭頂の髪（うすめ） -->
+                        <g stroke="#8a8f97" stroke-width="3">
+                            <path d="M80 40 q6 -8 14 -4"/>
+                            <path d="M100 36 q6 -7 14 -2"/>
+                            <path d="M118 42 q6 -6 12 0"/>
+                        </g>
+                        <!-- ほっぺ -->
+                        <ellipse cx="66" cy="100" rx="8" ry="5.5" fill="#ff9aa2" stroke="none" opacity="0.55"/>
+                        <ellipse cx="134" cy="100" rx="8" ry="5.5" fill="#ff9aa2" stroke="none" opacity="0.55"/>
+                        <!-- まゆ -->
+                        <path d="M72 64 Q82 60 92 64"/>
+                        <path d="M108 64 Q118 60 128 64"/>
+                        <!-- メガネ -->
+                        <g stroke="#3a3f47" stroke-width="3">
+                            <circle cx="82" cy="84" r="15" fill="#ffffff" fill-opacity="0.35"/>
+                            <circle cx="118" cy="84" r="15" fill="#ffffff" fill-opacity="0.35"/>
+                            <path d="M97 84 q3 -4 6 0"/>
+                            <path d="M67 80 L57 84"/>
+                            <path d="M133 80 L143 84"/>
+                        </g>
+                        <!-- にこにこの目 -->
+                        <path d="M75 85 Q82 93 89 85"/>
+                        <path d="M111 85 Q118 93 125 85"/>
+                        <!-- 鼻 -->
+                        <path d="M99 92 q-3 8 1 11"/>
+                        <!-- 口（にっこり） -->
+                        <path d="M81 110 Q100 134 119 110 Z" fill="#cf6a82"/>
+                        <path d="M81 110 Q100 117 119 110 Z" fill="#ffffff" stroke="none"/>
+                    </g>
+                </svg>
+                <div class="mascot-bubble">なんでも聞いてね。<br>いっしょに片づけよう！</div>
+            </div>
             <div class="help-grid">
                 <div class="help-card fade-in-up">
+                    <p class="help-bubble">ChatGPTって、<br>結局なに？</p>
                     <div class="help-card-icon"><i class="fa-solid fa-circle-question"></i></div>
                     <h3>AIの「これ何?」相談</h3>
                     <p>「ChatGPTって何?」「うちの仕事に使えるの?」——できること・できないことを、専門用語なしでお話しします。</p>
                 </div>
                 <div class="help-card fade-in-up" data-delay="100">
+                    <p class="help-bubble">チラシの文、<br>うまく書けない…</p>
                     <div class="help-card-icon"><i class="fa-solid fa-pen-nib"></i></div>
                     <h3>文章づくりのお手伝い</h3>
                     <p>チラシ・POP・お店のメニュー・あいさつ文。「うまく書けない…」をAIといっしょに形にします。</p>
                 </div>
                 <div class="help-card fade-in-up" data-delay="200">
+                    <p class="help-bubble">インスタ、<br>何を載せれば？</p>
                     <div class="help-card-icon"><i class="fa-brands fa-instagram"></i></div>
                     <h3>SNS・投稿のお手伝い</h3>
                     <p>Instagramやお店の投稿、何を書けばいい? 写真選びから文章まで、続けやすいやり方をご提案します。</p>
                 </div>
                 <div class="help-card fade-in-up" data-delay="300">
+                    <p class="help-bubble">この返信、<br>失礼じゃないかな？</p>
                     <div class="help-card-icon"><i class="fa-solid fa-envelope-open-text"></i></div>
                     <h3>メール・お返事の下書き</h3>
                     <p>お客様や取引先への返信メール、丁寧な言い回し。下書きをAIにおまかせして、時間を取り戻しましょう。</p>
                 </div>
                 <div class="help-card fade-in-up" data-delay="400">
+                    <p class="help-bubble">スマホのこれ、<br>どうやるの？</p>
                     <div class="help-card-icon"><i class="fa-solid fa-photo-film"></i></div>
                     <h3>写真・書類・スマホのお困りごと</h3>
                     <p>写真や書類の整理、スマホ・パソコンの「これどうやるの?」。身近なデジタルの困りごと、まるごとどうぞ。</p>
                 </div>
                 <div class="help-card help-card--web fade-in-up" data-delay="500">
                     <span class="help-card-badge">Web係の本業</span>
+                    <p class="help-bubble">お店のサイト、<br>ほしいなあ</p>
                     <div class="help-card-icon"><i class="fa-solid fa-globe"></i></div>
                     <h3>ホームページ制作</h3>
                     <p>お店や個人の紹介サイトを、最短3日・5,000円〜。約10年の実務経験で、見た目も中身もしっかり作ります。</p>
