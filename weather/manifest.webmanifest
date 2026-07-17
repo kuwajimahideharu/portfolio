@@ -1,0 +1,13 @@
+{
+  "name": "いまここ天気",
+  "short_name": "いまここ天気",
+  "description": "現在地の外気温と天候をアメダス実測値で表示",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#E06B32",
+  "theme_color": "#E06B32",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#E06B32">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>いまここ天気</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+  :root {
+    --orange: #E06B32;
+    --orange-light: #F49E66;
+    --peach: #FAD7B8;
+    --peach-pale: #FDEEDF;
+    --ink: #5A3A22;
+    --ink-soft: #96705270;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: "Hiragino Maru Gothic ProN", "BIZ UDGothic", "Rounded Mplus 1c", sans-serif;
+    background: linear-gradient(160deg, var(--orange-light), var(--orange));
+    min-height: 100vh;
+    min-height: 100dvh;
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 24px);
+  }
+  .board {
+    background: #fff;
+    border-radius: 28px;
+    width: 100%;
+    max-width: 430px;
+    box-shadow: 0 10px 30px rgba(90, 40, 0, .25);
+    overflow: hidden;
+    position: relative;
+  }
+  .pins {
+    position: absolute; top: -10px; left: 0; right: 0;
+    display: flex; justify-content: center; gap: 96px; pointer-events: none;
+  }
+  .pins span {
+    width: 14px; height: 34px; border-radius: 7px; background: #fff;
+    box-shadow: 0 2px 4px rgba(90, 40, 0, .2);
+  }
+  header {
+    background: var(--peach);
+    padding: 18px 20px 14px;
+    text-align: center;
+    border-radius: 28px 28px 0 0;
+  }
+  header h1 { font-size: 19px; letter-spacing: .12em; }
+  header .place {
+    font-size: 13px; margin-top: 4px; opacity: .75; min-height: 1.2em;
+  }
+  main { padding: 22px 22px 18px; text-align: center; }
+  .emoji { font-size: 64px; line-height: 1.1; }
+  .cond { font-size: 17px; margin-top: 2px; }
+  .cond .src {
+    display: inline-block; font-size: 10.5px; vertical-align: 2px; margin-left: 6px;
+    background: var(--peach-pale); border-radius: 999px; padding: 2px 8px; color: var(--ink);
+  }
+  .temp { font-size: 76px; font-weight: 700; line-height: 1.05; letter-spacing: -.02em; }
+  .temp small { font-size: 32px; font-weight: 600; }
+  .feels {
+    display: inline-block; font-size: 14px; font-weight: 700; margin-top: 4px;
+    background: var(--peach-pale); border-radius: 999px; padding: 4px 14px;
+  }
+  .obs { font-size: 12px; opacity: .65; margin-top: 6px; }
+  .nowcast {
+    margin-top: 16px; border-radius: 16px; padding: 12px 14px 10px; text-align: left;
+    background: var(--peach-pale); font-size: 13.5px; font-weight: 700; line-height: 1.5;
+  }
+  .nowcast.warn { background: #E3F0FF; color: #1D4E9E; }
+  .nowcast.ok { background: var(--peach-pale); }
+  .rainbar {
+    display: flex; gap: 3px; margin-top: 8px; align-items: flex-end; height: 18px;
+  }
+  .rainbar span {
+    flex: 1; border-radius: 3px; background: #E8DACB; height: 6px;
+  }
+  .rainbar span.l2 { background: #A0D2FF; height: 10px; }
+  .rainbar span.l3 { background: #4FA8FF; height: 13px; }
+  .rainbar span.l4 { background: #218CFF; height: 16px; }
+  .rainbar span.l5 { background: #0041FF; height: 18px; }
+  .rainbar span.l6 { background: #FAF500; height: 18px; }
+  .rainbar span.l7 { background: #FF9900; height: 18px; }
+  .rainbar span.l8, .rainbar span.l9 { background: #FF2800; height: 18px; }
+  .rainlabels {
+    display: flex; justify-content: space-between; font-size: 10px; font-weight: 500;
+    opacity: .65; margin-top: 3px;
+  }
+  .grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    margin-top: 18px;
+  }
+  .cell {
+    background: var(--peach-pale); border-radius: 16px; padding: 10px 4px;
+  }
+  .cell .k { font-size: 11px; opacity: .7; }
+  .cell .v { font-size: 17px; font-weight: 700; margin-top: 2px; }
+  .cell .v small { font-size: 11px; font-weight: 500; }
+  .station {
+    margin-top: 16px; font-size: 12.5px; background: var(--peach-pale);
+    border-radius: 14px; padding: 10px 12px; text-align: left; line-height: 1.7;
+  }
+  .station b { font-size: 13px; }
+  .diff { margin-top: 6px; font-size: 12px; opacity: .8; }
+  footer { padding: 0 22px 22px; }
+  button.refresh {
+    width: 100%; border: none; border-radius: 18px; padding: 14px;
+    font-size: 16px; font-weight: 700; color: #fff; font-family: inherit;
+    background: linear-gradient(160deg, var(--orange-light), var(--orange));
+    box-shadow: 0 4px 12px rgba(224, 107, 50, .4);
+    cursor: pointer; transition: transform .1s;
+  }
+  button.refresh:active { transform: scale(.97); }
+  .status { text-align: center; font-size: 13px; margin-top: 10px; color: #fff; min-height: 1.4em; text-shadow: 0 1px 3px rgba(90,40,0,.3); }
+  .loading .temp, .loading .emoji { opacity: .35; }
+  .credit { margin-top: 14px; font-size: 11px; color: #fff9; text-align: center; }
+</style>
+</head>
+<body>
+  <div class="board" id="board">
+    <div class="pins"><span></span><span></span></div>
+    <header>
+      <h1>☀️ いまここ天気</h1>
+      <div class="place" id="place">現在地を取得中…</div>
+    </header>
+    <main>
+      <div class="emoji" id="emoji">🌡️</div>
+      <div class="cond"><span id="cond">—</span><span class="src" id="condSrc" hidden></span></div>
+      <div class="temp"><span id="temp">--</span><small>℃</small></div>
+      <div class="feels" id="feels" hidden></div>
+      <div class="obs" id="obs">アメダス実測値</div>
+      <div class="nowcast" id="nowcast" hidden>
+        <span id="ncMsg"></span>
+        <div class="rainbar" id="rainbar"></div>
+        <div class="rainlabels"><span>今</span><span>15分</span><span>30分</span><span>45分</span><span>60分</span></div>
+      </div>
+      <div class="grid">
+        <div class="cell"><div class="k">湿度</div><div class="v" id="hum">--<small> %</small></div></div>
+        <div class="cell"><div class="k">風速</div><div class="v" id="wind">--<small> m/s</small></div></div>
+        <div class="cell"><div class="k">1時間雨量</div><div class="v" id="rain">--<small> mm</small></div></div>
+      </div>
+      <div class="station" id="stationBox" hidden>
+        📍 最寄り観測点: <b id="stName"></b>（<span id="stDist"></span> km）
+        <div class="diff" id="diff"></div>
+      </div>
+    </main>
+    <footer>
+      <button class="refresh" id="refreshBtn">🔄 更新する</button>
+    </footer>
+  </div>
+  <div class="status" id="status"></div>
+  <div class="credit">気温はアメダス実測値（気象庁）／雨雲は高解像度降水ナウキャスト／天候は実測＋予報モデル</div>
+
+<script>
+// すべてブラウザ内で完結する（自宅サーバーでもGitHub Pagesでも同一ファイルで動く）
+const $ = (id) => document.getElementById(id);
+const DIR16 = ["静穏","北北東","北東","東北東","東","東南東","南東","南南東","南","南南西","南西","西南西","西","西北西","北西","北北西","北"];
+const JMA = "https://www.jma.go.jp/bosai";
+let busy = false;
+
+function setStatus(msg) { $("status").textContent = msg || ""; }
+
+async function fetchJSON(url, opts) {
+  const r = await fetch(url, opts);
+  if (!r.ok) throw new Error(`${url} -> ${r.status}`);
+  return r.json();
+}
+
+function getPosition() {
+  // デバッグ用: ?lat=..&lon=.. で位置を固定できる
+  const qp = new URLSearchParams(location.search);
+  if (qp.has("lat") && qp.has("lon")) {
+    return Promise.resolve({ latitude: parseFloat(qp.get("lat")), longitude: parseFloat(qp.get("lon")) });
+  }
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) return reject(new Error("この端末では位置情報が使えません"));
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve(pos.coords),
+      (err) => reject(new Error(
+        err.code === 1 ? "位置情報が許可されていません。設定から許可してください" : "現在地を取得できませんでした"
+      )),
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+    );
+  });
+}
+
+// ---------- アメダス ----------
+const dmToDeg = ([d, m]) => d + m / 60;
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371, rad = Math.PI / 180;
+  const dLat = (lat2 - lat1) * rad, dLon = (lon2 - lon1) * rad;
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+async function getAmedasTable() {
+  try {
+    const c = JSON.parse(localStorage.getItem("amedastable") || "null");
+    if (c && Date.now() - c.at < 24 * 3600e3) return c.data;
+  } catch (e) {}
+  const data = await fetchJSON(`${JMA}/amedas/const/amedastable.json`);
+  try { localStorage.setItem("amedastable", JSON.stringify({ at: Date.now(), data })); } catch (e) {}
+  return data;
+}
+
+async function getAmedas(lat, lon) {
+  const [table, latestRaw] = await Promise.all([
+    getAmedasTable(),
+    fetch(`${JMA}/amedas/data/latest_time.txt`, { cache: "no-store" }).then((r) => r.text()),
+  ]);
+  const observedAt = new Date(latestRaw.trim());
+  const ts = latestRaw.replace(/\D/g, "").slice(0, 14);
+  const data = await fetchJSON(`${JMA}/amedas/data/map/${ts}.json`);
+
+  const ranked = Object.entries(table)
+    .map(([id, st]) => ({ id, st, dist: haversineKm(lat, lon, dmToDeg(st.lat), dmToDeg(st.lon)) }))
+    .sort((a, b) => a.dist - b.dist);
+
+  const tempStations = [];
+  const nearStations = []; // 項目別フォールバック用（近い順・50km以内）
+  for (const r of ranked) {
+    const obs = data[r.id];
+    if (!obs) continue;
+    if (r.dist <= 50 && nearStations.length < 10) nearStations.push({ ...r, obs });
+    if (obs.temp && obs.temp[1] === 0 && tempStations.length < 3 && r.dist <= 50) {
+      tempStations.push({ ...r, obs });
+    }
+    if (tempStations.length >= 3 && nearStations.length >= 10) break;
+  }
+  return { observedAt, tempStations, nearStations };
+}
+
+// ---------- Open-Meteo（天候コード・昼夜・標高・モデル気温） ----------
+function getOpenMeteo(lat, lon) {
+  return fetchJSON(
+    `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(2)}&longitude=${lon.toFixed(2)}` +
+    `&current=weather_code,is_day,temperature_2m&timezone=Asia%2FTokyo`
+  );
+}
+
+// ---------- 国土地理院 逆ジオコーダ（町名） ----------
+function getPlaceName(lat, lon) {
+  return fetchJSON(`https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat=${lat.toFixed(3)}&lon=${lon.toFixed(3)}`)
+    .then((j) => (j.results && j.results.lv01Nm) || null)
+    .catch(() => null);
+}
+
+// ---------- 高解像度降水ナウキャスト ----------
+const RAIN_BANDS = [
+  null, null,
+  { label: "ごく弱い雨" }, { label: "弱い雨" }, { label: "雨" }, { label: "やや強い雨" },
+  { label: "強い雨" }, { label: "激しい雨" }, { label: "非常に激しい雨" }, { label: "猛烈な雨" },
+];
+// タイルパレットの色 → 強度レベル（2〜9）
+const BAND_COLORS = [
+  [242, 242, 255, 2], [160, 210, 255, 3], [33, 140, 255, 4], [0, 65, 255, 5],
+  [250, 245, 0, 6], [255, 153, 0, 7], [255, 40, 0, 8], [180, 0, 104, 9],
+];
+function levelFromRGBA(r, g, b, a) {
+  if (a < 128) return 0;
+  let best = 0, bd = Infinity;
+  for (const [R, G, B, l] of BAND_COLORS) {
+    const d = (r - R) ** 2 + (g - G) ** 2 + (b - B) ** 2;
+    if (d < bd) { bd = d; best = l; }
+  }
+  return bd < 3000 ? best : 0;
+}
+
+function tilePixel(lat, lon, z) {
+  const n = 2 ** z;
+  const xf = ((lon + 180) / 360) * n;
+  const lr = (lat * Math.PI) / 180;
+  const yf = ((1 - Math.log(Math.tan(lr) + 1 / Math.cos(lr)) / Math.PI) / 2) * n;
+  return { x: Math.floor(xf), y: Math.floor(yf), px: Math.floor((xf % 1) * 256), py: Math.floor((yf % 1) * 256) };
+}
+
+const jmaDate = (s) =>
+  new Date(`${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}T${s.slice(8,10)}:${s.slice(10,12)}:${s.slice(12,14)}Z`);
+
+function tileLevel(url, px, py) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      try {
+        const cv = document.createElement("canvas");
+        cv.width = cv.height = 256;
+        const ctx = cv.getContext("2d", { willReadFrequently: true });
+        ctx.drawImage(img, 0, 0);
+        const [r, g, b, a] = ctx.getImageData(px, py, 1, 1).data;
+        resolve(levelFromRGBA(r, g, b, a));
+      } catch (e) { resolve(0); }
+    };
+    img.onerror = () => resolve(0); // 雨のないタイルは404で返る
+    img.src = url;
+  });
+}
+
+async function getNowcast(lat, lon) {
+  const Z = 10;
+  const { x, y, px, py } = tilePixel(lat, lon, Z);
+  const [n1, n2] = await Promise.all([
+    fetchJSON(`${JMA}/jmatile/data/nowc/targetTimes_N1.json`, { cache: "no-store" }),
+    fetchJSON(`${JMA}/jmatile/data/nowc/targetTimes_N2.json`, { cache: "no-store" }),
+  ]);
+  const now = n1.find((t) => t.basetime === t.validtime) || n1[0];
+  const forecasts = [...n2].sort((a, b) => a.validtime.localeCompare(b.validtime));
+  const steps = [
+    { min: 0, basetime: now.basetime, validtime: now.validtime },
+    ...forecasts.map((t) => ({
+      min: Math.round((jmaDate(t.validtime) - jmaDate(t.basetime)) / 60e3),
+      basetime: t.basetime, validtime: t.validtime,
+    })),
+  ];
+  const timeline = await Promise.all(
+    steps.map(async (s) => {
+      const url = `${JMA}/jmatile/data/nowc/${s.basetime}/none/${s.validtime}/surf/hrpns/${Z}/${x}/${y}.png`;
+      const level = await tileLevel(url, px, py);
+      return { min: s.min, level, band: RAIN_BANDS[level] || null };
+    })
+  );
+
+  const rainNow = timeline[0].level >= 2;
+  let message;
+  if (rainNow) {
+    const stopIdx = timeline.findIndex((t, i) => i > 0 && t.level < 2 && timeline.slice(i).every((u) => u.level < 2));
+    message = stopIdx > 0
+      ? { icon: "🌂", text: `${timeline[stopIdx].min}分後ごろにやみそうです`, level: "info" }
+      : { icon: "☔", text: "この先1時間は雨が続く見込みです", level: "warn" };
+  } else {
+    const startIdx = timeline.findIndex((t) => t.level >= 2);
+    message = startIdx >= 0
+      ? { icon: "☔", text: `${timeline[startIdx].min}分後ごろから${timeline[startIdx].band.label}の見込みです`, level: "warn" }
+      : { icon: "🌈", text: "この先1時間 雨の心配はありません", level: "ok" };
+  }
+  return { timeline, message };
+}
+
+// ---------- 体感温度（Steadman式） ----------
+function feelsLike(t, h, v) {
+  if (t == null || h == null) return null;
+  const w = Math.max(v ?? 0, 0);
+  const e = (h / 100) * 6.105 * Math.exp((17.27 * t) / (237.7 + t));
+  return Math.round((t + 0.33 * e - 0.7 * w - 4.0) * 10) / 10;
+}
+
+// ---------- WMO天候コード → 日本語 ----------
+const WMO = [
+  [[0], "快晴", "☀️"], [[1], "晴れ", "🌤️"], [[2], "晴れ時々くもり", "⛅"], [[3], "くもり", "☁️"],
+  [[45, 48], "霧", "🌫️"], [[51, 53, 55, 56, 57], "霧雨", "🌦️"],
+  [[61, 63, 80, 81], "雨", "🌧️"], [[65, 82], "強い雨", "🌧️"], [[66, 67], "みぞれ", "🌨️"],
+  [[71, 73, 75, 77, 85, 86], "雪", "❄️"], [[95, 96, 99], "雷雨", "⛈️"],
+];
+function wmoToJa(code) {
+  for (const [codes, label, emoji] of WMO) if (codes.includes(code)) return { label, emoji };
+  return { label: "不明", emoji: "🌡️" };
+}
+
+// ---------- 天気の組み立て ----------
+async function buildWeather(lat, lon) {
+  const [amedas, om, place, nowcast] = await Promise.all([
+    getAmedas(lat, lon),
+    getOpenMeteo(lat, lon).catch(() => null),
+    getPlaceName(lat, lon),
+    getNowcast(lat, lon).catch(() => null),
+  ]);
+  const { observedAt, tempStations, nearStations } = amedas;
+  if (tempStations.length === 0) throw new Error("近くのアメダス観測点が見つかりません（日本国内でご利用ください）");
+
+  const pickDetail = (key) => {
+    for (const s of nearStations) if (s.obs[key] && s.obs[key][1] === 0) return s.obs[key][0];
+    return null;
+  };
+
+  // 標高補正つき距離加重平均（気温減率 0.6℃/100m）
+  const userAlt = om && typeof om.elevation === "number" ? om.elevation : tempStations[0].st.alt;
+  let wSum = 0, tSum = 0;
+  for (const s of tempStations) {
+    const w = 1 / Math.max(s.dist, 0.1) ** 2;
+    wSum += w;
+    tSum += w * (s.obs.temp[0] + 0.006 * (s.st.alt - userAlt));
+  }
+  const temp = Math.round((tSum / wSum) * 10) / 10;
+
+  // 天候: アメダス雨量計 > 雨雲レーダー実況 > 日照計 > 予報モデル
+  let cond = om ? wmoToJa(om.current.weather_code) : { label: "—", emoji: "🌡️" };
+  let condSource = "予報モデル";
+  const precip10 = pickDetail("precipitation10m");
+  const sun10 = pickDetail("sun10m");
+  const isDay = om ? om.current.is_day === 1 : true;
+  const nowcastRainingNow = nowcast && nowcast.timeline[0] && nowcast.timeline[0].level >= 2;
+
+  if (precip10 !== null && precip10 > 0) {
+    cond = temp <= 1 ? { label: "雪", emoji: "❄️" } : { label: "雨", emoji: "🌧️" };
+    condSource = "アメダス実測";
+  } else if (nowcastRainingNow) {
+    const band = nowcast.timeline[0].band;
+    cond = temp <= 1 ? { label: "雪", emoji: "❄️" } : { label: band.label, emoji: "🌧️" };
+    condSource = "雨雲レーダー実況";
+  } else if (isDay && sun10 !== null) {
+    if (sun10 >= 6 && !["雨", "強い雨", "雷雨", "雪", "みぞれ", "霧雨"].includes(cond.label)) {
+      cond = sun10 >= 9 ? { label: "晴れ", emoji: "☀️" } : { label: "晴れ時々くもり", emoji: "🌤️" };
+      condSource = "アメダス実測";
+    } else if (sun10 <= 1 && ["快晴", "晴れ"].includes(cond.label)) {
+      cond = { label: "くもり", emoji: "☁️" };
+      condSource = "アメダス実測";
+    }
+  }
+
+  const humidity = pickDetail("humidity");
+  const wind = pickDetail("wind");
+  const near = tempStations[0];
+
+  return {
+    place, temp,
+    feelsLike: feelsLike(temp, humidity, wind),
+    nowcast,
+    condition: { ...cond, source: condSource },
+    humidity, wind,
+    windDirection: pickDetail("windDirection"),
+    precipitation1h: pickDetail("precipitation1h"),
+    observedAt,
+    station: { name: near.st.kjName, distanceKm: Math.round(near.dist * 10) / 10 },
+    modelTemp: om ? om.current.temperature_2m : null,
+  };
+}
+
+// ---------- 画面更新 ----------
+async function update() {
+  if (busy) return;
+  busy = true;
+  $("board").classList.add("loading");
+  setStatus("現在地を取得中…");
+  try {
+    const { latitude, longitude } = await getPosition();
+    setStatus("観測データを取得中…");
+    const w = await buildWeather(latitude, longitude);
+
+    $("place").textContent = w.place ? `📍 ${w.place}` : "📍 現在地";
+    $("emoji").textContent = w.condition.emoji;
+    $("cond").textContent = w.condition.label;
+    $("condSrc").textContent = w.condition.source;
+    $("condSrc").hidden = false;
+    $("temp").textContent = w.temp.toFixed(1);
+    if (w.feelsLike != null) {
+      $("feels").textContent = `体感 ${w.feelsLike.toFixed(1)}℃`;
+      $("feels").hidden = false;
+    }
+    if (w.nowcast) {
+      const nc = w.nowcast;
+      $("ncMsg").textContent = `${nc.message.icon} ${nc.message.text}`;
+      $("nowcast").className = `nowcast ${nc.message.level}`;
+      $("rainbar").innerHTML = nc.timeline
+        .map((t) => `<span class="l${t.level}" title="${t.min}分後${t.band ? " " + t.band.label : ""}"></span>`)
+        .join("");
+      $("nowcast").hidden = false;
+    }
+    const t = w.observedAt;
+    $("obs").textContent = `${t.getHours()}:${String(t.getMinutes()).padStart(2, "0")} アメダス実測`;
+    $("hum").innerHTML = (w.humidity ?? "--") + "<small> %</small>";
+    const dir = w.windDirection != null ? (DIR16[w.windDirection] || "") : "";
+    $("wind").innerHTML = (w.wind ?? "--") + `<small> m/s ${dir}</small>`;
+    $("rain").innerHTML = (w.precipitation1h ?? "--") + "<small> mm</small>";
+    $("stName").textContent = w.station.name;
+    $("stDist").textContent = w.station.distanceKm;
+    if (w.modelTemp != null) {
+      const d = (w.temp - w.modelTemp).toFixed(1);
+      $("diff").textContent = `予報モデル値 ${w.modelTemp.toFixed(1)}℃ との差: ${d > 0 ? "+" : ""}${d}℃`;
+    } else {
+      $("diff").textContent = "";
+    }
+    $("stationBox").hidden = false;
+    setStatus("");
+  } catch (e) {
+    setStatus(`⚠️ ${e.message}`);
+  } finally {
+    busy = false;
+    $("board").classList.remove("loading");
+  }
+}
+
+$("refreshBtn").addEventListener("click", update);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") update();
+});
+setInterval(update, 5 * 60 * 1000);
+update();
+
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
+</script>
+</body>
+</html>
