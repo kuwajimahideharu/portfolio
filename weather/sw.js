@@ -1,6 +1,6 @@
 // いまここ天気 Service Worker — アプリシェルのみキャッシュ、外部API（気象庁等）は素通し
 // 相対パスなのでルート配置（自宅サーバー）でもサブディレクトリ配置（GitHub Pages）でも動く
-const CACHE = "ima-koko-tenki-v3";
+const CACHE = "ima-koko-tenki-v4";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icon.svg", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", (e) => {
