@@ -1,4 +1,4 @@
-const CACHE = "timer-v5";
+const CACHE = "timer-v6";
 // 相対パス: ドメイン直下でもサブフォルダ（hideharu.site/timer/）でも動く
 const ASSETS = ["./", "./manifest.webmanifest", "./icon.svg", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 
