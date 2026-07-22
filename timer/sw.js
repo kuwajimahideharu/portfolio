@@ -1,6 +1,7 @@
-const CACHE = "timer-v6";
+const CACHE = "timer-v9";
 // 相対パス: ドメイン直下でもサブフォルダ（hideharu.site/timer/）でも動く
-const ASSETS = ["./", "./manifest.webmanifest", "./icon.svg", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
+const VOICE_FILES = ["m1", "s30", "c10", "c9", "c8", "c7", "c6", "c5", "c4", "c3", "c2", "c1"].map(n => `./voice/${n}.wav`);
+const ASSETS = ["./", "./manifest.webmanifest", "./icon.svg", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png", ...VOICE_FILES];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));

@@ -15,11 +15,38 @@
 <style>
 :root{
   --bg:#F6EDE3;
+  --card-bg:#fff;
   --peach:#FAD7B8;
   --orange:#DD6B35;
   --orange-soft:#F49E66;
   --ink:#5b4636;
+  --sub-ink:#9b7150;
+  --sel-ink:#8a4a1d;
+  --faint-ink:#c9a98c;
 }
+:root[data-theme="dark"]{
+  --bg:#1b1918;
+  --card-bg:#2a2724;
+  --peach:#4a3d2e;
+  --orange:#FF9757;
+  --orange-soft:#FFA968;
+  --ink:#EDE3D8;
+  --sub-ink:#c2ab93;
+  --sel-ink:#FFDCB0;
+  --faint-ink:#8a7c6c;
+}
+:root[data-theme="pastel"]{
+  --bg:#FCF1F6;
+  --card-bg:#fffdfe;
+  --peach:#FFD9E8;
+  --orange:#E8779F;
+  --orange-soft:#F0A0BE;
+  --ink:#6b4a5c;
+  --sub-ink:#a97b93;
+  --sel-ink:#a3355f;
+  --faint-ink:#d1a9bc;
+}
+body{transition:background .25s,color .25s}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
 body{
@@ -83,16 +110,16 @@ h1::before,h1::after{content:"";display:block;width:34px;height:2px;border-radiu
 #presets{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .chip{
   border:none;border-radius:14px;padding:10px 0;
-  background:#fff;color:var(--ink);font-size:15px;font-weight:700;
+  background:var(--card-bg);color:var(--ink);font-size:15px;font-weight:700;
   box-shadow:0 2px 6px rgba(90,55,20,.12);
   cursor:pointer;
 }
 .chip:active{transform:scale(.95)}
-.chip.sel{background:var(--peach);color:#8a4a1d;box-shadow:inset 0 0 0 2px var(--orange-soft)}
+.chip.sel{background:var(--peach);color:var(--sel-ink);box-shadow:inset 0 0 0 2px var(--orange-soft)}
 /* くるくるダイヤル（iOS風ホイールピッカー） */
 #picker{
   position:relative;display:flex;justify-content:center;gap:36px;
-  background:#fff;border-radius:18px;
+  background:var(--card-bg);border-radius:18px;
   box-shadow:0 2px 6px rgba(90,55,20,.12);
 }
 #pickerBand{
@@ -108,7 +135,7 @@ h1::before,h1::after{content:"";display:block;width:34px;height:2px;border-radiu
 }
 .wheel::-webkit-scrollbar{display:none}
 .wheel .item{height:38px;line-height:38px;text-align:center;font-size:24px;font-weight:700;color:var(--ink);scroll-snap-align:center}
-.unit{font-size:15px;font-weight:700;color:#9b7150}
+.unit{font-size:15px;font-weight:700;color:var(--sub-ink)}
 #controls{display:flex;gap:12px}
 .btn{
   flex:1;border:none;border-radius:18px;padding:16px 0;
@@ -118,22 +145,54 @@ h1::before,h1::after{content:"";display:block;width:34px;height:2px;border-radiu
 .btn:active{transform:scale(.97)}
 #btnStart{background:linear-gradient(135deg,var(--orange-soft),#E06B32);color:#fff}
 #btnStart.pause{background:linear-gradient(135deg,#7c8894,#55606b)}
-#btnReset{flex:.6;background:#fff;color:#9b7150}
+#btnReset{flex:.6;background:var(--card-bg);color:var(--sub-ink)}
 .disabled{opacity:.35;pointer-events:none}
-#hint{font-size:12px;color:#b08a68;text-align:center;line-height:1.7}
+#hint{font-size:12px;color:var(--sub-ink);text-align:center;line-height:1.7}
+
+/* ===== 設定カード（音声・テーマ） ===== */
+#settings{
+  width:100%;max-width:560px;
+  background:var(--card-bg);border-radius:18px;padding:14px 18px;
+  box-shadow:0 4px 12px rgba(90,55,20,.12);
+  display:flex;flex-direction:column;gap:14px;
+}
+.setRow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.setLabel{font-size:14px;font-weight:700;color:var(--ink)}
+.toggle{
+  width:52px;height:30px;border-radius:15px;border:none;flex-shrink:0;
+  background:#d8cabb;position:relative;cursor:pointer;transition:background .2s;
+}
+.toggle::before{
+  content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s;
+}
+.toggle.on{background:var(--orange-soft)}
+.toggle.on::before{transform:translateX(22px)}
+#themePicker{display:flex;gap:10px}
+.themeDot{
+  width:32px;height:32px;border-radius:50%;border:none;cursor:pointer;position:relative;
+  box-shadow:0 2px 5px rgba(0,0,0,.25);
+}
+.themeDot[data-theme="orange"]{background:linear-gradient(135deg,#F49E66,#DD6B35)}
+.themeDot[data-theme="dark"]{background:linear-gradient(135deg,#3a3733,#141210)}
+.themeDot[data-theme="pastel"]{background:linear-gradient(135deg,#FFD9E8,#E8779F)}
+.themeDot.sel::after{
+  content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:14px;font-weight:900;text-shadow:0 1px 2px rgba(0,0,0,.4);
+}
 
 /* ===== シェア用QRコード ===== */
 #share{
   display:flex;align-items:center;gap:16px;
-  background:#fff;border-radius:18px;padding:16px 20px;
+  background:var(--card-bg);border-radius:18px;padding:16px 20px;
   box-shadow:0 4px 12px rgba(90,55,20,.12);
 }
 #share svg{width:96px;height:96px;display:block}
 #shareTxt{display:flex;flex-direction:column;gap:4px}
 #shareTxt b{font-size:14px;color:var(--orange)}
-#shareTxt span{font-size:12px;color:#9b7150;line-height:1.6}
+#shareTxt span{font-size:12px;color:var(--sub-ink);line-height:1.6}
 #shareTxt .url{font-weight:700;color:var(--ink);letter-spacing:.02em}
-#ver{font-size:10px;color:#c9a98c;text-align:center;letter-spacing:.05em}
+#ver{font-size:10px;color:var(--faint-ink);text-align:center;letter-spacing:.05em}
 </style>
 </head>
 <body>
@@ -154,7 +213,22 @@ h1::before,h1::after{content:"";display:block;width:34px;height:2px;border-radiu
   <button class="btn" id="btnStart">▶ スタート</button>
   <button class="btn" id="btnReset">リセット</button>
 </div>
-<p id="hint">バーは残り時間。時間が減ると右（青）から消えていきます<br>スタート時の「ピッ」が終了アラームと同じ音量です</p>
+<p id="hint">バーは残り時間。時間が減ると右（青）から消えていきます<br>スタート時の「ピッ」が終了アラームと同じ音量です<br>振動はAndroid端末のみ対応（iPhoneのSafariは仕様上非対応です）</p>
+
+<div id="settings">
+  <div class="setRow">
+    <span class="setLabel">🔔 音声カウント（ずんだもん）</span>
+    <button id="voiceToggle" class="toggle" aria-pressed="true" aria-label="音声カウントのON/OFF"></button>
+  </div>
+  <div class="setRow">
+    <span class="setLabel">🎨 カラーテーマ</span>
+    <div id="themePicker">
+      <button class="themeDot" data-theme="orange" aria-label="オレンジテーマ"></button>
+      <button class="themeDot" data-theme="dark" aria-label="ダークテーマ"></button>
+      <button class="themeDot" data-theme="pastel" aria-label="パステルテーマ"></button>
+    </div>
+  </div>
+</div>
 
 <div id="share">
   <svg viewBox="0 0 29 29" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" role="img" aria-label="配布用QRコード"><path fill="#5b4636" d="M0 0h7v1h-7zM9 0h3v1h-3zM13 0h1v1h-1zM16 0h1v1h-1zM19 0h1v1h-1zM22 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM8 1h1v1h-1zM10 1h2v1h-2zM14 1h7v1h-7zM22 1h1v1h-1zM28 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM9 2h1v1h-1zM12 2h3v1h-3zM16 2h1v1h-1zM18 2h2v1h-2zM22 2h1v1h-1zM24 2h3v1h-3zM28 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM10 3h1v1h-1zM12 3h4v1h-4zM18 3h1v1h-1zM22 3h1v1h-1zM24 3h3v1h-3zM28 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM8 4h1v1h-1zM12 4h1v1h-1zM14 4h1v1h-1zM17 4h4v1h-4zM22 4h1v1h-1zM24 4h3v1h-3zM28 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM9 5h1v1h-1zM11 5h1v1h-1zM13 5h1v1h-1zM17 5h1v1h-1zM19 5h2v1h-2zM22 5h1v1h-1zM28 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h7v1h-7zM9 7h3v1h-3zM13 7h2v1h-2zM16 7h5v1h-5zM0 8h1v1h-1zM2 8h1v1h-1zM4 8h1v1h-1zM6 8h1v1h-1zM11 8h1v1h-1zM14 8h2v1h-2zM17 8h1v1h-1zM20 8h1v1h-1zM24 8h1v1h-1zM27 8h1v1h-1zM0 9h2v1h-2zM3 9h3v1h-3zM7 9h2v1h-2zM10 9h3v1h-3zM14 9h2v1h-2zM20 9h3v1h-3zM25 9h1v1h-1zM28 9h1v1h-1zM1 10h2v1h-2zM4 10h3v1h-3zM10 10h1v1h-1zM12 10h2v1h-2zM20 10h1v1h-1zM23 10h2v1h-2zM26 10h3v1h-3zM1 11h1v1h-1zM3 11h2v1h-2zM8 11h2v1h-2zM12 11h1v1h-1zM15 11h1v1h-1zM17 11h5v1h-5zM27 11h1v1h-1zM1 12h3v1h-3zM5 12h4v1h-4zM10 12h1v1h-1zM16 12h2v1h-2zM21 12h2v1h-2zM25 12h1v1h-1zM27 12h2v1h-2zM0 13h2v1h-2zM4 13h1v1h-1zM7 13h2v1h-2zM12 13h2v1h-2zM15 13h3v1h-3zM20 13h3v1h-3zM25 13h1v1h-1zM28 13h1v1h-1zM3 14h2v1h-2zM6 14h3v1h-3zM12 14h1v1h-1zM14 14h3v1h-3zM22 14h1v1h-1zM24 14h2v1h-2zM27 14h2v1h-2zM0 15h1v1h-1zM4 15h1v1h-1zM7 15h2v1h-2zM13 15h2v1h-2zM16 15h4v1h-4zM25 15h1v1h-1zM27 15h1v1h-1zM0 16h1v1h-1zM6 16h1v1h-1zM10 16h1v1h-1zM14 16h2v1h-2zM17 16h1v1h-1zM19 16h4v1h-4zM25 16h1v1h-1zM27 16h2v1h-2zM1 17h2v1h-2zM4 17h2v1h-2zM7 17h2v1h-2zM11 17h1v1h-1zM14 17h2v1h-2zM17 17h2v1h-2zM20 17h1v1h-1zM22 17h1v1h-1zM25 17h2v1h-2zM28 17h1v1h-1zM0 18h1v1h-1zM2 18h1v1h-1zM4 18h6v1h-6zM13 18h1v1h-1zM17 18h2v1h-2zM22 18h3v1h-3zM27 18h2v1h-2zM1 19h1v1h-1zM3 19h1v1h-1zM5 19h1v1h-1zM7 19h3v1h-3zM11 19h2v1h-2zM15 19h1v1h-1zM17 19h1v1h-1zM21 19h5v1h-5zM27 19h1v1h-1zM0 20h1v1h-1zM2 20h3v1h-3zM6 20h4v1h-4zM12 20h1v1h-1zM16 20h3v1h-3zM20 20h5v1h-5zM8 21h1v1h-1zM11 21h3v1h-3zM15 21h2v1h-2zM20 21h1v1h-1zM24 21h1v1h-1zM26 21h3v1h-3zM0 22h7v1h-7zM10 22h1v1h-1zM12 22h1v1h-1zM14 22h4v1h-4zM19 22h2v1h-2zM22 22h1v1h-1zM24 22h2v1h-2zM27 22h2v1h-2zM0 23h1v1h-1zM6 23h1v1h-1zM13 23h2v1h-2zM16 23h3v1h-3zM20 23h1v1h-1zM24 23h2v1h-2zM27 23h1v1h-1zM0 24h1v1h-1zM2 24h3v1h-3zM6 24h1v1h-1zM8 24h2v1h-2zM11 24h1v1h-1zM14 24h2v1h-2zM18 24h1v1h-1zM20 24h5v1h-5zM27 24h1v1h-1zM0 25h1v1h-1zM2 25h3v1h-3zM6 25h1v1h-1zM9 25h1v1h-1zM13 25h3v1h-3zM19 25h2v1h-2zM23 25h2v1h-2zM26 25h1v1h-1zM0 26h1v1h-1zM2 26h3v1h-3zM6 26h1v1h-1zM8 26h2v1h-2zM13 26h2v1h-2zM17 26h1v1h-1zM19 26h1v1h-1zM21 26h1v1h-1zM23 26h3v1h-3zM28 26h1v1h-1zM0 27h1v1h-1zM6 27h1v1h-1zM9 27h2v1h-2zM12 27h2v1h-2zM15 27h1v1h-1zM19 27h2v1h-2zM23 27h1v1h-1zM27 27h1v1h-1zM0 28h7v1h-7zM8 28h2v1h-2zM11 28h3v1h-3zM16 28h1v1h-1zM20 28h3v1h-3zM27 28h2v1h-2z"/></svg>
@@ -164,10 +238,36 @@ h1::before,h1::after{content:"";display:block;width:34px;height:2px;border-radiu
     <span class="url">hideharu.site/timer/</span>
   </div>
 </div>
-<p id="ver">バータイマー v1.3（2026-07-20）</p>
+<p id="ver">バータイマー v1.6（2026-07-22）</p>
 
 <script>
 "use strict";
+/* ===== 設定: テーマ・音声カウント ===== */
+let theme=localStorage.getItem("theme")||"orange";
+let voiceOn=localStorage.getItem("voiceOn")!=="0"; // デフォルトON
+const THEME_COLOR={orange:"#F6EDE3",dark:"#1b1918",pastel:"#FCF1F6"};
+function applyTheme(){
+  document.documentElement.setAttribute("data-theme",theme);
+  const mc=document.querySelector('meta[name="theme-color"]');
+  if(mc)mc.setAttribute("content",THEME_COLOR[theme]||THEME_COLOR.orange);
+  document.querySelectorAll(".themeDot").forEach(b=>b.classList.toggle("sel",b.dataset.theme===theme));
+}
+document.querySelectorAll(".themeDot").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    theme=btn.dataset.theme;localStorage.setItem("theme",theme);applyTheme();
+  });
+});
+applyTheme();
+const voiceToggle=document.getElementById("voiceToggle");
+function applyVoiceToggle(){
+  voiceToggle.classList.toggle("on",voiceOn);
+  voiceToggle.setAttribute("aria-pressed",String(voiceOn));
+}
+voiceToggle.addEventListener("click",()=>{
+  voiceOn=!voiceOn;localStorage.setItem("voiceOn",voiceOn?"1":"0");applyVoiceToggle();
+});
+applyVoiceToggle();
+
 /* ===== 7セグ表示 ===== */
 const SEGMAP={0:"abcdef",1:"bc",2:"abged",3:"abgcd",4:"fgbc",5:"afgcd",6:"afgedc",7:"abc",8:"abcdefg",9:"abfgcd"};
 const t=14,W=62,H=110,d=1.2; // 太さ・digitサイズ・隙間
@@ -298,11 +398,13 @@ function render(){
 function tick(){
   remainMs=endAt-Date.now();
   if(remainMs<=0){remainMs=0;finish();return;}
+  checkVoiceCues(remainMs);
   render();
 }
 function start(){
   unlockAudio();
   playStartBeep();
+  voiceFired=new Set();
   endAt=Date.now()+remainMs;
   state="run";
   timerId=setInterval(tick,200);
@@ -322,6 +424,7 @@ function finish(){
   clearInterval(timerId);timerId=null;
   state="alarm";render();
   startBeeps();
+  vibrateAlarm();
   alarmTimer=setTimeout(reset,60000); // 1分で自動停止
 }
 
@@ -360,20 +463,60 @@ const alarmAudio=new Audio(buildBeepWav(4));
 alarmAudio.setAttribute("playsinline","");
 const startAudio=new Audio(buildBeepWav(1)); // スタート時の「ピッ」＝アラームと同音色・同音量（音量の目安）
 startAudio.setAttribute("playsinline","");
+
+/* ===== 音声カウント（ずんだもん・VOICEVOX事前生成） =====
+   alarmAudio/startAudio と同じく BlobURL 化する。
+   外部ファイルを直接 src にすると、iOSではネットワーク読み込みの遅延で
+   ユーザー操作起因の解錠（unlockAudio）とタイミングがずれ、
+   サイレントモード時に鳴らないことがあるため */
+const VOICE_NAMES=["m1","s30","c10","c9","c8","c7","c6","c5","c4","c3","c2","c1"];
+const voiceAudios={};
+async function loadVoice(name){
+  try{
+    const blob=await fetch(`voice/${name}.wav`).then(r=>r.blob());
+    const a=new Audio(URL.createObjectURL(blob));
+    a.setAttribute("playsinline","");
+    voiceAudios[name]=a;
+    if(audioReady)unlockOne(a); // 読み込みが遅れて解錠済みの後に届いた場合の保険
+  }catch(e){}
+}
+VOICE_NAMES.forEach(loadVoice);
+let voiceFired=new Set();
+function playVoice(name){
+  if(!voiceOn)return;
+  const a=voiceAudios[name];
+  if(!a)return;
+  a.currentTime=0;a.play().catch(()=>{});
+}
+function checkVoiceCues(remainMs){
+  if(!voiceOn)return;
+  const sec=Math.ceil(remainMs/1000);
+  if(sec===60&&!voiceFired.has(60)){voiceFired.add(60);playVoice("m1");}
+  if(sec===30&&!voiceFired.has(30)){voiceFired.add(30);playVoice("s30");}
+  if(sec>=1&&sec<=10&&!voiceFired.has(sec)){voiceFired.add(sec);playVoice("c"+sec);}
+}
+
+function unlockOne(a){
+  a.muted=true;
+  const p=a.play();
+  if(p)p.then(()=>{a.pause();a.currentTime=0;a.muted=false;}).catch(()=>{a.muted=false;});
+}
 function unlockAudio(){ // スタート押下（ユーザー操作）時に一度だけ無音再生して再生許可を得る
   if(audioReady)return;
-  alarmAudio.muted=true;
-  const p=alarmAudio.play();
-  if(p)p.then(()=>{alarmAudio.pause();alarmAudio.currentTime=0;alarmAudio.muted=false;audioReady=true;})
-       .catch(()=>{alarmAudio.muted=false;});
+  [alarmAudio,startAudio,...Object.values(voiceAudios)].forEach(unlockOne);
+  audioReady=true;
 }
 function playStartBeep(){startAudio.currentTime=0;startAudio.play().catch(()=>{});}
 function playBeep(){alarmAudio.currentTime=0;alarmAudio.play().catch(()=>{});}
 function startBeeps(){playBeep();beepInt=setInterval(playBeep,1200);}
+function vibrateAlarm(){ // iPhoneのSafariはVibration API非対応のため実質Android向け
+  if(navigator.vibrate)navigator.vibrate([300,150,300,150,300,150,300,150,300]);
+}
 function stopAlarm(){
   if(beepInt){clearInterval(beepInt);beepInt=null;}
   alarmAudio.pause();alarmAudio.currentTime=0;
   if(alarmTimer){clearTimeout(alarmTimer);alarmTimer=null;}
+  if(navigator.vibrate)navigator.vibrate(0);
 }
 
 /* ===== 画面スリープ防止 ===== */
