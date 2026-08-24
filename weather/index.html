@@ -11,6 +11,14 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
+  /* ホーム画面から起動すると、iOSがステータスバーのすりガラスをページの上に描く。
+     下に何を敷いても透けるので、重なる範囲より下へ中身を追い出すしかない。
+     ガラスの範囲は env(safe-area-inset-top) の申告値より広い（実機は47pxと申告するが
+     53pxのカードがまだかすれた）ので、申告値は当てにせず59pxを下限にする */
+  :root { --safe-t: env(safe-area-inset-top); }
+  @media (display-mode: standalone) {
+    :root { --safe-t: max(env(safe-area-inset-top), 59px); }
+  }
   :root {
     --orange: #E06B32;
     --orange-light: #F49E66;
@@ -30,7 +38,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 24px);
+    padding: calc(var(--safe-t) + 16px) 16px calc(env(safe-area-inset-bottom) + 24px);
   }
   .board {
     background: #fff;
@@ -72,6 +80,22 @@
     display: inline-block; font-size: 14px; font-weight: 700; margin-top: 4px;
     background: var(--peach-pale); border-radius: 999px; padding: 4px 14px;
   }
+  /* 体感フィーリング（気温・湿度・風のミックスを言葉で） */
+  .mood {
+    margin: 10px auto 0; max-width: 330px;
+    border-radius: 18px; padding: 10px 14px 11px;
+    background: var(--peach-pale);
+  }
+  .mood .ml {
+    font-size: 18px; font-weight: 700; line-height: 1.3;
+  }
+  .mood .mi { font-size: 20px; margin-right: 6px; vertical-align: -2px; }
+  .mood .ms { font-size: 12px; margin-top: 3px; line-height: 1.55; opacity: .85; }
+  .mood.hot  { background: #FFE0D2; color: #B8420F; }
+  .mood.warm { background: #FFEFD4; color: #A76B14; }
+  .mood.nice { background: #E2F4DF; color: #3C7A38; }
+  .mood.cool { background: #E4F1FB; color: #26688F; }
+  .mood.cold { background: #E3EAFC; color: #2B4E96; }
   .obs { font-size: 12px; opacity: .65; margin-top: 6px; }
   .nowcast {
     margin-top: 16px; border-radius: 16px; padding: 12px 14px 10px; text-align: left;
@@ -150,6 +174,10 @@
       <div class="cond"><span id="cond">—</span><span class="src" id="condSrc" hidden></span></div>
       <div class="temp"><span id="temp">--</span><small>℃</small></div>
       <div class="feels" id="feels" hidden></div>
+      <div class="mood" id="mood" hidden>
+        <div class="ml"><span class="mi" id="moodEmoji"></span><span id="moodLabel"></span></div>
+        <div class="ms" id="moodSub"></div>
+      </div>
       <div class="obs" id="obs">アメダス実測値</div>
       <div class="nowcast" id="nowcast" hidden>
         <span id="ncMsg"></span>
@@ -376,6 +404,99 @@ function feelsLike(t, h, v) {
   return Math.round((t + 0.33 * e - 0.7 * w - 4.0) * 10) / 10;
 }
 
+// ---------- 体感フィーリング（気温・湿度・風向きをミックスした言葉） ----------
+// 北寄り＝冷たい風、南寄り＝湿った風、という体感の実際に寄せて一言を足す
+const DIR_NORTH = [14, 15, 16, 1, 2];   // 北西〜北北東
+const DIR_SOUTH = [6, 7, 8, 9, 10];     // 南東〜南西
+
+function windSense(dir, v, h, f) {
+  if (v == null || v < 2.5 || dir == null || dir === 0) return null;
+  const name = DIR16[dir];
+  if (!name) return null;
+  const north = DIR_NORTH.includes(dir);
+  const south = DIR_SOUTH.includes(dir);
+  if (f >= 27) {                       // 暑い
+    if (h != null && h >= 80) return `${name}の風はあるけれど、湿気で汗が乾きません`;
+    if (v >= 6) return `${name}の風が強めで、それだけが救いです`;
+    return south ? `${name}のぬるい風が吹いています` : `${name}の風が汗を乾かしてくれます`;
+  }
+  if (f >= 16) {                       // 快適〜涼しい
+    if (v >= 6) return `${name}の風がやや強めです`;
+    return `${name}の風がさらっと吹き抜けます`;
+  }
+  if (v >= 6) return `${name}の風が強く、体感はもっと寒く感じます`;
+  if (f >= 8) return north ? `${name}の風がひんやり冷たいです` : `${name}の風で首元が冷えます`;
+  return north ? `${name}の風が冷たく刺さります` : `${name}の風が身にしみます`;
+}
+
+function moodOf(w) {
+  const f = w.feelsLike != null ? w.feelsLike : w.temp;
+  if (f == null) return null;
+  const h = w.humidity, v = w.wind;
+  const label = w.condition ? w.condition.label : "";
+  const raining = ["雨", "強い雨", "雷雨", "霧雨", "みぞれ"].includes(label);
+  const snowing = label === "雪";
+  const humid = h != null && h >= 70;
+  let m;
+
+  // しきい値は体感温度（Steadman式）基準。暑い側は気温より数℃高く出る
+  if (f >= 40) {
+    m = humid
+      ? { tone: "hot", emoji: "🥵", label: "危険な蒸し暑さ", sub: "無理は禁物。日陰と水分を最優先で" }
+      : { tone: "hot", emoji: "🥵", label: "危険な暑さ", sub: "無理は禁物。日陰と水分を最優先で" };
+  } else if (f >= 35) {
+    m = humid
+      ? { tone: "hot", emoji: "🥵", label: "うだるような蒸し暑さ", sub: "汗が引かない蒸し風呂タイプです" }
+      : { tone: "hot", emoji: "🌞", label: "じりじり暑い", sub: "乾いた暑さ。日差しが刺さります" };
+  } else if (f >= 31) {
+    if (humid) {
+      m = { tone: "hot", emoji: "😓", label: "むしむし暑い", sub: "空気が重く、汗が乾きにくい湿気です" };
+    } else if (v != null && v >= 3) {
+      m = { tone: "warm", emoji: "🍃", label: "暑いけれど風が助けてくれる", sub: "日陰に入ればしのげます" };
+    } else {
+      m = { tone: "warm", emoji: "☀️", label: "しっかり暑い", sub: "こまめに休憩を入れたい暑さです" };
+    }
+  } else if (f >= 27) {
+    if (w.temp != null && w.temp >= 28 && v != null && v >= 3) {
+      m = { tone: "warm", emoji: "🍃", label: "暑いけれど風が助けてくれる", sub: "日陰に入ればしのげます" };
+    } else if (h != null && h >= 80) {
+      m = { tone: "warm", emoji: "😮‍💨", label: "じめっと生ぬるい", sub: "気温のわりに空気がまとわりつきます" };
+    } else if (h != null && h <= 55) {
+      m = { tone: "nice", emoji: "😎", label: "からっと夏日和", sub: "日陰に入れば気持ちよく過ごせます" };
+    } else {
+      m = { tone: "warm", emoji: "🙂", label: "あたたかい", sub: "半袖でちょうどいい陽気です" };
+    }
+  } else if (f >= 22) {
+    if (h != null && h >= 80) {
+      m = { tone: "nice", emoji: "💧", label: "ほんのり蒸す", sub: "気温は穏やかですが湿り気が多めです" };
+    } else if (h != null && h <= 45) {
+      m = { tone: "nice", emoji: "🍃", label: "さらっと爽やか", sub: "空気が軽く、いちばん動きやすい陽気です" };
+    } else {
+      m = { tone: "nice", emoji: "😊", label: "気持ちいい陽気", sub: "外にいるのがちょうど心地よい体感です" };
+    }
+  } else if (f >= 16) {
+    m = { tone: "cool", emoji: "🍃", label: "爽やかで涼しい", sub: "歩くのにちょうどいい涼しさです" };
+  } else if (f >= 12) {
+    m = { tone: "cool", emoji: "🧥", label: "ひんやり", sub: "上着が一枚あると安心です" };
+  } else if (f >= 7) {
+    m = { tone: "cold", emoji: "🧣", label: "肌寒い", sub: "しっかり羽織って出かけたい寒さです" };
+  } else if (f >= 1) {
+    m = { tone: "cold", emoji: "🥶", label: "冷え込んでいます", sub: "手袋とマフラーが恋しい体感です" };
+  } else {
+    m = { tone: "cold", emoji: "🧊", label: "凍える寒さ", sub: "防寒はしっかり、路面の凍結にも注意を" };
+  }
+
+  const extras = [];
+  if (snowing) extras.push("雪で足元が冷えます");
+  else if (raining) extras.push("雨で空気が湿っぽくなっています");
+  else if (h != null && h <= 35 && f < 27) extras.push("空気がかなり乾いています");
+  const ws = windSense(w.windDirection, v, h, f);
+  if (ws) extras.push(ws);
+
+  if (extras.length) m.sub = m.sub + "。" + extras.slice(0, 2).join("。");
+  return m;
+}
+
 // ---------- WMO天候コード → 日本語 ----------
 const WMO = [
   [[0], "快晴", "☀️"], [[1], "晴れ", "🌤️"], [[2], "晴れ時々くもり", "⛅"], [[3], "くもり", "☁️"],
@@ -477,6 +598,14 @@ async function update() {
     if (w.feelsLike != null) {
       $("feels").textContent = `体感 ${w.feelsLike.toFixed(1)}℃`;
       $("feels").hidden = false;
+    }
+    const mood = moodOf(w);
+    if (mood) {
+      $("moodEmoji").textContent = mood.emoji;
+      $("moodLabel").textContent = mood.label;
+      $("moodSub").textContent = mood.sub;
+      $("mood").className = `mood ${mood.tone}`;
+      $("mood").hidden = false;
     }
     if (w.nowcast) {
       const nc = w.nowcast;
