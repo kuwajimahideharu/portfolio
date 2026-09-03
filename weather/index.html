@@ -216,6 +216,8 @@ const $ = (id) => document.getElementById(id);
 const DIR16 = ["静穏","北北東","北東","東北東","東","東南東","南東","南南東","南","南南西","南西","西南西","西","西北西","北西","北北西","北"];
 const JMA = "https://www.jma.go.jp/bosai";
 let busy = false;
+let gen = 0;        // 更新の世代。遅れて届いた町名で新しい表示を上書きしないための番号
+let placeName = null; // 今の現在地の町名。本体の描画と後追いの差し込みが取り合わないよう1か所で持つ
 
 function setStatus(msg) { $("status").textContent = msg || ""; }
 
@@ -225,12 +227,14 @@ async function fetchJSON(url, opts) {
   return r.json();
 }
 
-function getPosition() {
-  // デバッグ用: ?lat=..&lon=.. で位置を固定できる
+// デバッグ用: ?lat=..&lon=.. で位置を固定できる
+function fixedPosition() {
   const qp = new URLSearchParams(location.search);
-  if (qp.has("lat") && qp.has("lon")) {
-    return Promise.resolve({ latitude: parseFloat(qp.get("lat")), longitude: parseFloat(qp.get("lon")) });
-  }
+  if (!qp.has("lat") || !qp.has("lon")) return null;
+  return { latitude: parseFloat(qp.get("lat")), longitude: parseFloat(qp.get("lon")) };
+}
+
+function geolocate(opts) {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) return reject(new Error("この端末では位置情報が使えません"));
     navigator.geolocation.getCurrentPosition(
@@ -238,9 +242,25 @@ function getPosition() {
       (err) => reject(new Error(
         err.code === 1 ? "位置情報が許可されていません。設定から許可してください" : "現在地を取得できませんでした"
       )),
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+      opts
     );
   });
+}
+
+// 気象データ用の座標。最寄りのアメダスは数km先なので100m精度は要らない。
+// Wi-Fi/基地局測位なら1秒ほどで返るので、GPS測位の数秒〜十数秒を待たせない。
+function getPosition() {
+  return fixedPosition()
+    ? Promise.resolve(fixedPosition())
+    : geolocate({ enableHighAccuracy: false, timeout: 10000, maximumAge: 120000 });
+}
+
+// 町名用の座標。丁目まで出したいので高精度を待つが、
+// このときすでに気温は表示済みなので遅くても体感に響かない。
+function finePosition(fallback) {
+  if (fixedPosition()) return Promise.resolve(fallback);
+  return geolocate({ enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 })
+    .catch(() => fallback);
 }
 
 // ---------- アメダス ----------
@@ -299,10 +319,36 @@ function getOpenMeteo(lat, lon) {
 }
 
 // ---------- 国土地理院 逆ジオコーダ（町名） ----------
+// 国土地理院は時々ひどく詰まる（2026-09-03に53秒応答・504を実測）。
+// 町名は付加情報なので、待たずに諦めて前回の町名を使い回す。
+const PLACE_KEY = "weatherPlace";
+const PLACE_TIMEOUT_MS = 3000;
+
+// 前回取れた町名を、そこから1km以内・1週間以内なら流用する
+function cachedPlace(lat, lon) {
+  try {
+    const c = JSON.parse(localStorage.getItem(PLACE_KEY) || "null");
+    if (c && Date.now() - c.at < 7 * 24 * 3600e3 && haversineKm(lat, lon, c.lat, c.lon) < 1) return c.name;
+  } catch (e) {}
+  return null;
+}
+
 function getPlaceName(lat, lon) {
-  return fetchJSON(`https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat=${lat.toFixed(3)}&lon=${lon.toFixed(3)}`)
-    .then((j) => (j.results && j.results.lv01Nm) || null)
-    .catch(() => null);
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), PLACE_TIMEOUT_MS);
+  return fetchJSON(
+    `https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat=${lat.toFixed(3)}&lon=${lon.toFixed(3)}`,
+    { signal: ctrl.signal }
+  )
+    .then((j) => {
+      const name = (j.results && j.results.lv01Nm) || null;
+      if (name) {
+        try { localStorage.setItem(PLACE_KEY, JSON.stringify({ at: Date.now(), lat, lon, name })); } catch (e) {}
+      }
+      return name;
+    })
+    .catch(() => null)
+    .finally(() => clearTimeout(timer));
 }
 
 // ---------- 高解像度降水ナウキャスト ----------
@@ -511,10 +557,11 @@ function wmoToJa(code) {
 
 // ---------- 天気の組み立て ----------
 async function buildWeather(lat, lon) {
-  const [amedas, om, place, nowcast] = await Promise.all([
+  // 町名はここに入れない。国土地理院が詰まると全項目の描画がそれに引きずられるため、
+  // update() 側で別に取りに行き、届いた時点で画面へ差し込む。
+  const [amedas, om, nowcast] = await Promise.all([
     getAmedas(lat, lon),
     getOpenMeteo(lat, lon).catch(() => null),
-    getPlaceName(lat, lon),
     getNowcast(lat, lon).catch(() => null),
   ]);
   const { observedAt, tempStations, nearStations } = amedas;
@@ -565,7 +612,7 @@ async function buildWeather(lat, lon) {
   const near = tempStations[0];
 
   return {
-    place, temp,
+    temp,
     feelsLike: feelsLike(temp, humidity, wind),
     nowcast,
     condition: { ...cond, source: condSource },
@@ -587,9 +634,22 @@ async function update() {
   try {
     const { latitude, longitude } = await getPosition();
     setStatus("観測データを取得中…");
+
+    // 町名は本体の描画を待たせない。高精度測位と国土地理院が遅くても、
+    // 気温や雨雲はもう画面に出ている。まずは前回の町名で仮置きする。
+    const my = ++gen;
+    placeName = cachedPlace(latitude, longitude);
+    finePosition({ latitude, longitude })
+      .then((c) => getPlaceName(c.latitude, c.longitude))
+      .then((name) => {
+        if (!name || my !== gen) return;
+        placeName = name;
+        $("place").textContent = `📍 ${name}`;
+      });
+
     const w = await buildWeather(latitude, longitude);
 
-    $("place").textContent = w.place ? `📍 ${w.place}` : "📍 現在地";
+    $("place").textContent = placeName ? `📍 ${placeName}` : "📍 現在地";
     $("emoji").textContent = w.condition.emoji;
     $("cond").textContent = w.condition.label;
     $("condSrc").textContent = w.condition.source;
