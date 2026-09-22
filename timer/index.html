@@ -13,6 +13,14 @@
 <meta name="apple-mobile-web-app-title" content="バータイマー">
 <meta name="theme-color" content="#F6EDE3">
 <style>
+/* ホーム画面から起動すると、iOSがステータスバーのすりガラスをページの上に描く。
+   下に何を敷いても透けるので、重なる範囲より下へ中身を追い出すしかない。
+   ガラスの範囲は env(safe-area-inset-top) の申告値より広い（実機は47pxと申告するが
+   53pxの文字がまだかすれた）ので、申告値は当てにせず59pxを下限にする */
+:root{ --safe-t:env(safe-area-inset-top); }
+@media (display-mode: standalone){
+  :root{ --safe-t:max(env(safe-area-inset-top), 59px); }
+}
 :root{
   --bg:#F6EDE3;
   --card-bg:#fff;
@@ -54,7 +62,7 @@ body{
   font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
   color:var(--ink);
   display:flex;flex-direction:column;align-items:center;
-  padding:calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 14px);
+  padding:calc(var(--safe-t) + 14px) 14px calc(env(safe-area-inset-bottom) + 14px);
   gap:16px;
   user-select:none;-webkit-user-select:none;
   touch-action:manipulation;
@@ -147,6 +155,8 @@ h1::before,h1::after{content:"";display:block;width:34px;height:2px;border-radiu
 #btnStart.pause{background:linear-gradient(135deg,#7c8894,#55606b)}
 #btnReset{flex:.6;background:var(--card-bg);color:var(--sub-ink)}
 .disabled{opacity:.35;pointer-events:none}
+#resumeNote{margin:10px auto 0;max-width:420px;font-size:13px;font-weight:700;color:var(--ink);background:var(--orange-soft);border-radius:12px;padding:8px 12px;text-align:center;line-height:1.6}
+#resumeNote[hidden]{display:none}
 #hint{font-size:12px;color:var(--sub-ink);text-align:center;line-height:1.7}
 
 /* ===== 設定カード（音声・テーマ） ===== */
@@ -202,6 +212,8 @@ h1::before,h1::after{content:"";display:block;width:34px;height:2px;border-radiu
   <div id="barwin" class="window"></div>
   <div id="lcd" class="window"></div>
 </div>
+<!-- 開き直して続きから動いているとき・終わってから戻ってきたときの一言（v1.7） -->
+<p id="resumeNote" hidden></p>
 
 <div id="presets"></div>
 <div id="picker">
@@ -238,7 +250,7 @@ h1::before,h1::after{content:"";display:block;width:34px;height:2px;border-radiu
     <span class="url">hideharu.site/timer/</span>
   </div>
 </div>
-<p id="ver">バータイマー v1.6（2026-07-22）</p>
+<p id="ver">バータイマー v1.7（2026-09-23）</p>
 
 <script>
 "use strict";
@@ -401,6 +413,19 @@ function tick(){
   checkVoiceCues(remainMs);
   render();
 }
+/* ===== 動いているタイマーを端末に覚えておく（v1.7・2026-09-23） =====
+   iPhone はしばらく裏に回したアプリを閉じてしまう。以前は開き直すと
+   動いていたタイマーが消えて最初の画面に戻っていた。
+   終了時刻（endAt）で数えているので、覚えておけば開き直してもそのまま続きから動く */
+const RUN_KEY="timerRun";
+function saveRun(){
+  try{
+    if(state==="run")localStorage.setItem(RUN_KEY,JSON.stringify({st:"run",endAt,total}));
+    else if(state==="pause")localStorage.setItem(RUN_KEY,JSON.stringify({st:"pause",remainMs,total}));
+    else localStorage.removeItem(RUN_KEY);
+  }catch(e){}
+}
+
 function start(){
   unlockAudio();
   playStartBeep();
@@ -409,20 +434,32 @@ function start(){
   state="run";
   timerId=setInterval(tick,200);
   requestWake();
+  saveRun();
   render();
 }
 function pause(){
   clearInterval(timerId);timerId=null;
   remainMs=Math.max(0,endAt-Date.now());
-  state="pause";releaseWake();render();
+  state="pause";releaseWake();saveRun();render();
 }
 function reset(){
   clearInterval(timerId);timerId=null;stopAlarm();
-  state="idle";remainMs=total*1000;releaseWake();render();
+  state="idle";remainMs=total*1000;releaseWake();saveRun();render();
+  showNote("");
 }
+// 終わってから時間がたって戻ってきたときは、1分鳴らし続けない。
+// 20分前に終わったタイマーが、戻った瞬間から鳴り出すと驚くうえ、もう役に立たない
+const LATE_MS=60*1000;
 function finish(){
   clearInterval(timerId);timerId=null;
-  state="alarm";render();
+  const late=Date.now()-endAt;
+  state="alarm";saveRun();render();
+  if(late>LATE_MS){
+    playBeep();                    // 1回だけ鳴らして、いつ終わったかを出す
+    const m=Math.round(late/60000);
+    showNote(`⏰ ${m<60?m+"分":Math.floor(m/60)+"時間"+(m%60?m%60+"分":"")}前に終わりました（画面をタップで戻ります）`);
+    return;
+  }
   startBeeps();
   vibrateAlarm();
   alarmTimer=setTimeout(reset,60000); // 1分で自動停止
@@ -530,6 +567,43 @@ document.addEventListener("visibilitychange",()=>{
   }
 });
 
+/* ===== 開き直したときに続きから ===== */
+function showNote(msg){
+  const el=document.getElementById("resumeNote");
+  el.textContent=msg;el.hidden=!msg;
+}
+function restoreRun(){
+  let r=null;
+  try{r=JSON.parse(localStorage.getItem(RUN_KEY)||"null");}catch(e){}
+  if(!r||!r.total)return;
+  total=r.total;
+  if(r.st==="pause"){
+    state="pause";remainMs=Math.max(0,r.remainMs);
+    showNote("⏸ 一時停止したところから続けられます");
+    return;
+  }
+  if(r.st!=="run")return;
+  endAt=r.endAt;
+  remainMs=endAt-Date.now();
+  if(remainMs<=0){remainMs=0;finish();return;}
+  // 過ぎた節目の声は出さない（開き直した瞬間に「残り1分」などと言わない）
+  voiceFired=new Set();
+  const sec=Math.ceil(remainMs/1000);
+  for(const c of[60,30,10,9,8,7,6,5,4,3,2,1])if(c>=sec)voiceFired.add(c);
+  state="run";
+  timerId=setInterval(tick,200);
+  requestWake();
+  // iPhone は画面を一度さわるまで音を出させてくれない（開き直すと許可が消える）
+  showNote("▶ 続きから動いています。画面を一度タップすると、終わりの音が鳴るようになります");
+}
+// 開き直したあとは、最初のタップで音の許可を取り直す（スタートを押さずに続きから動いているため）
+document.addEventListener("pointerdown",()=>{
+  unlockAudio();
+  if(state==="alarm")return;
+  if(!document.getElementById("resumeNote").hidden&&state==="run")showNote("");
+},{passive:true});
+
+restoreRun();
 render();
 syncWheels();
 if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js");
