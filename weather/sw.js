@@ -1,6 +1,6 @@
 // いまここ天気 Service Worker — アプリシェルのみキャッシュ、外部API（気象庁等）は素通し
 // 相対パスなのでルート配置（自宅サーバー）でもサブディレクトリ配置（GitHub Pages）でも動く
-const CACHE = "ima-koko-tenki-v8";
+const CACHE = "ima-koko-tenki-v9";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icon.svg", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", (e) => {
@@ -24,7 +24,8 @@ self.addEventListener("fetch", (e) => {
   if (url.origin !== location.origin) return; // 気象庁などの外部APIはキャッシュしない
   if (e.request.method !== "GET") return;     // 利用状況カウンターの POST /api/hit は素通し
   e.respondWith(
-    caches.match(e.request).then((hit) => {
+    // サーバーが Vary: Accept-Encoding を返すので、照合で取りこぼさないようにする
+    caches.match(e.request, { ignoreVary: true }).then((hit) => {
       const net = fetch(e.request)
         .then((res) => {
           if (res && res.ok) {

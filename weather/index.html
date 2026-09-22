@@ -625,87 +625,153 @@ async function buildWeather(lat, lon) {
   };
 }
 
+// ---------- 前回の値の取り置き ----------
+// 開いたらまず前回の値を出し、裏で最新に差し替える（2026-09-23・区域マップと同じ考え方）。
+// 以前は開くたび・アプリを切り替えて戻るたびに「--」や半透明の読み込み中になり、
+// 測位と気象庁の応答（1秒〜数秒）を待たされていた。電波が届かないと何も出なかった
+const LAST_KEY = "weatherLast";
+const LAST_MAX_AGE = 6 * 3600e3;       // これより古い値は出さない（半日前の気温は今の参考にならない）
+const RECHECK_MS = 3 * 60e3;           // 戻ってきても、前の更新からこれ未満なら取り直さない（アメダスは10分毎）
+let lastOk = 0;                        // 最後に最新の値を出せた時刻
+let shownAt = null;                    // いま画面に出ている値の観測時刻（前回の値のときも）
+
+// at は値を取った時刻（町名だけ後から差し替えても、値の古さは変えない）
+function saveLast(w, at) {
+  if (!w) return;
+  try {
+    localStorage.setItem(LAST_KEY, JSON.stringify({ at, place: placeName, w }));
+  } catch (e) {}
+}
+function loadLast() {
+  try {
+    const c = JSON.parse(localStorage.getItem(LAST_KEY) || "null");
+    if (!c || Date.now() - c.at > LAST_MAX_AGE) return null;
+    c.w.observedAt = new Date(c.w.observedAt);
+    return c;
+  } catch (e) { return null; }
+}
+
+const hhmm = (t) => `${t.getHours()}:${String(t.getMinutes()).padStart(2, "0")}`;
+// 観測時刻の行。前回の値を出している間はそう書いておく（新しい値と取り違えないように）
+function setObs(note) {
+  if (!shownAt) return;
+  $("obs").textContent = `${hhmm(shownAt)} アメダス実測` + (note ? `・${note}` : "");
+}
+
+// ---------- 画面へ描く ----------
+function render(w) {
+  $("place").textContent = placeName ? `📍 ${placeName}` : "📍 現在地";
+  $("emoji").textContent = w.condition.emoji;
+  $("cond").textContent = w.condition.label;
+  $("condSrc").textContent = w.condition.source;
+  $("condSrc").hidden = false;
+  $("temp").textContent = w.temp.toFixed(1);
+  $("feels").hidden = w.feelsLike == null;
+  if (w.feelsLike != null) $("feels").textContent = `体感 ${w.feelsLike.toFixed(1)}℃`;
+  const mood = moodOf(w);
+  $("mood").hidden = !mood;
+  if (mood) {
+    $("moodEmoji").textContent = mood.emoji;
+    $("moodLabel").textContent = mood.label;
+    $("moodSub").textContent = mood.sub;
+    $("mood").className = `mood ${mood.tone}`;
+  }
+  $("nowcast").hidden = !w.nowcast;
+  if (w.nowcast) {
+    const nc = w.nowcast;
+    $("ncMsg").textContent = `${nc.message.icon} ${nc.message.text}`;
+    $("nowcast").className = `nowcast ${nc.message.level}`;
+    $("rainbar").innerHTML = nc.timeline
+      .map((t) => `<span class="l${t.level}" title="${t.min}分後${t.band ? " " + t.band.label : ""}"></span>`)
+      .join("");
+  }
+  shownAt = w.observedAt;
+  setObs("");
+  $("hum").innerHTML = (w.humidity ?? "--") + "<small> %</small>";
+  const dir = w.windDirection != null ? (DIR16[w.windDirection] || "") : "";
+  $("wind").innerHTML = (w.wind ?? "--") + `<small> m/s ${dir}</small>`;
+  $("rain").innerHTML = (w.precipitation1h ?? "--") + "<small> mm</small>";
+  $("stName").textContent = w.station.name;
+  $("stDist").textContent = w.station.distanceKm;
+  if (w.modelTemp != null) {
+    const d = (w.temp - w.modelTemp).toFixed(1);
+    $("diff").textContent = `予報モデル値 ${w.modelTemp.toFixed(1)}℃ との差: ${d > 0 ? "+" : ""}${d}℃`;
+  } else {
+    $("diff").textContent = "";
+  }
+  $("stationBox").hidden = false;
+}
+
 // ---------- 画面更新 ----------
-async function update() {
+// quiet: 起動時・戻ってきたとき・5分ごとの自動更新。画面はそのまま、裏で差し替えるだけ
+//        （以前は毎回、気温が半透明になり「現在地を取得中…」が出てちらついていた）
+// 🔄ボタンを押したときだけ、押したことが分かるよう半透明にする
+async function update(opts = {}) {
   if (busy) return;
   busy = true;
-  $("board").classList.add("loading");
-  setStatus("現在地を取得中…");
+  const shown = shownAt !== null;
+  const dim = !opts.quiet || !shown;       // まだ何も出ていないときは、読み込み中と分かるようにする
+  if (dim) $("board").classList.add("loading");
+  if (!opts.quiet) setStatus("現在地を取得中…");
+  if (shown && opts.quiet) setObs("更新中…");
   try {
     const { latitude, longitude } = await getPosition();
-    setStatus("観測データを取得中…");
+    if (!opts.quiet) setStatus("観測データを取得中…");
 
     // 町名は本体の描画を待たせない。高精度測位と国土地理院が遅くても、
     // 気温や雨雲はもう画面に出ている。まずは前回の町名で仮置きする。
     const my = ++gen;
-    placeName = cachedPlace(latitude, longitude);
+    placeName = cachedPlace(latitude, longitude) || (shown ? placeName : null);
     finePosition({ latitude, longitude })
       .then((c) => getPlaceName(c.latitude, c.longitude))
       .then((name) => {
         if (!name || my !== gen) return;
         placeName = name;
         $("place").textContent = `📍 ${name}`;
+        if (lastOk) saveLast(lastW, lastOk);   // 最新の値を出したあとなら、町名も一緒に取り置き直す
       });
 
     const w = await buildWeather(latitude, longitude);
-
-    $("place").textContent = placeName ? `📍 ${placeName}` : "📍 現在地";
-    $("emoji").textContent = w.condition.emoji;
-    $("cond").textContent = w.condition.label;
-    $("condSrc").textContent = w.condition.source;
-    $("condSrc").hidden = false;
-    $("temp").textContent = w.temp.toFixed(1);
-    if (w.feelsLike != null) {
-      $("feels").textContent = `体感 ${w.feelsLike.toFixed(1)}℃`;
-      $("feels").hidden = false;
-    }
-    const mood = moodOf(w);
-    if (mood) {
-      $("moodEmoji").textContent = mood.emoji;
-      $("moodLabel").textContent = mood.label;
-      $("moodSub").textContent = mood.sub;
-      $("mood").className = `mood ${mood.tone}`;
-      $("mood").hidden = false;
-    }
-    if (w.nowcast) {
-      const nc = w.nowcast;
-      $("ncMsg").textContent = `${nc.message.icon} ${nc.message.text}`;
-      $("nowcast").className = `nowcast ${nc.message.level}`;
-      $("rainbar").innerHTML = nc.timeline
-        .map((t) => `<span class="l${t.level}" title="${t.min}分後${t.band ? " " + t.band.label : ""}"></span>`)
-        .join("");
-      $("nowcast").hidden = false;
-    }
-    const t = w.observedAt;
-    $("obs").textContent = `${t.getHours()}:${String(t.getMinutes()).padStart(2, "0")} アメダス実測`;
-    $("hum").innerHTML = (w.humidity ?? "--") + "<small> %</small>";
-    const dir = w.windDirection != null ? (DIR16[w.windDirection] || "") : "";
-    $("wind").innerHTML = (w.wind ?? "--") + `<small> m/s ${dir}</small>`;
-    $("rain").innerHTML = (w.precipitation1h ?? "--") + "<small> mm</small>";
-    $("stName").textContent = w.station.name;
-    $("stDist").textContent = w.station.distanceKm;
-    if (w.modelTemp != null) {
-      const d = (w.temp - w.modelTemp).toFixed(1);
-      $("diff").textContent = `予報モデル値 ${w.modelTemp.toFixed(1)}℃ との差: ${d > 0 ? "+" : ""}${d}℃`;
-    } else {
-      $("diff").textContent = "";
-    }
-    $("stationBox").hidden = false;
+    lastW = w;
+    render(w);
+    lastOk = Date.now();
+    saveLast(w, lastOk);
     setStatus("");
   } catch (e) {
-    setStatus(`⚠️ ${e.message}`);
+    // 測位・気象庁のどちらかが取れなくても、出ている値は消さない
+    const offline = e instanceof TypeError || !navigator.onLine;
+    if (shown) {
+      setObs(offline ? "電波が弱いため前回の値" : "前回の値");
+      setStatus(offline ? "📶 電波が弱いので、前回の値を表示しています" : `⚠️ ${e.message}（前回の値を表示しています）`);
+    } else {
+      setStatus(offline ? "📶 電波が届きません。つながったら自動で更新します" : `⚠️ ${e.message}`);
+    }
   } finally {
     busy = false;
     $("board").classList.remove("loading");
   }
 }
+let lastW = null;
 
-$("refreshBtn").addEventListener("click", update);
+$("refreshBtn").addEventListener("click", () => update());
+// 戻ってきたとき。少し前に更新したばかりなら何もしない＝切り替える前の画面がそのまま残る
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible") update();
+  if (document.visibilityState === "visible" && Date.now() - lastOk >= RECHECK_MS) update({ quiet: true });
 });
-setInterval(update, 5 * 60 * 1000);
-update();
+window.addEventListener("online", () => { if (Date.now() - lastOk >= RECHECK_MS) update({ quiet: true }); });
+setInterval(() => {
+  if (document.visibilityState === "visible") update({ quiet: true });
+}, 5 * 60 * 1000);
+
+// 起動: 前回の値があれば先に出す（6時間以内のものだけ）
+const last = loadLast();
+if (last) {
+  placeName = last.place;
+  lastW = last.w;
+  render(last.w);
+  setObs("前回の値・更新中…");
+}
+update({ quiet: !!last });
 
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
 </script>
