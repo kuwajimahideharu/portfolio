@@ -467,6 +467,7 @@ function windSense(dir, v, h, f) {
     return south ? `${name}のぬるい風が吹いています` : `${name}の風が汗を乾かしてくれます`;
   }
   if (f >= 16) {                       // 快適〜涼しい
+    if (h != null && h >= 85) return `${name}の風はあっても、湿気は抜けません`;
     if (v >= 6) return `${name}の風がやや強めです`;
     return `${name}の風がさらっと吹き抜けます`;
   }
@@ -513,7 +514,9 @@ function moodOf(w) {
       m = { tone: "warm", emoji: "🙂", label: "あたたかい", sub: "半袖でちょうどいい陽気です" };
     }
   } else if (f >= 22) {
-    if (h != null && h >= 80) {
+    if (h != null && h >= 90) {
+      m = { tone: "warm", emoji: "💦", label: "じめっと蒸す", sub: "湿気が肌にまとわりつく、べたつく空気です" };
+    } else if (h != null && h >= 80) {
       m = { tone: "nice", emoji: "💧", label: "ほんのり蒸す", sub: "気温は穏やかですが湿り気が多めです" };
     } else if (h != null && h <= 45) {
       m = { tone: "nice", emoji: "🍃", label: "さらっと爽やか", sub: "空気が軽く、いちばん動きやすい陽気です" };
@@ -521,9 +524,18 @@ function moodOf(w) {
       m = { tone: "nice", emoji: "😊", label: "気持ちいい陽気", sub: "外にいるのがちょうど心地よい体感です" };
     }
   } else if (f >= 16) {
-    m = { tone: "cool", emoji: "🍃", label: "爽やかで涼しい", sub: "歩くのにちょうどいい涼しさです" };
+    // 湿度が高いと「涼しいのにべたつく」。雨の日の体感はこちらに寄せる
+    if (h != null && h >= 90) {
+      m = { tone: "cool", emoji: "💦", label: "涼しいけれどべたべた", sub: "気温は低めでも、湿気で肌がべたっとします" };
+    } else if (h != null && h >= 80) {
+      m = { tone: "cool", emoji: "💧", label: "しっとり涼しい", sub: "涼しいけれど、空気は湿り気たっぷりです" };
+    } else {
+      m = { tone: "cool", emoji: "🍃", label: "爽やかで涼しい", sub: "歩くのにちょうどいい涼しさです" };
+    }
   } else if (f >= 12) {
-    m = { tone: "cool", emoji: "🧥", label: "ひんやり", sub: "上着が一枚あると安心です" };
+    m = h != null && h >= 90
+      ? { tone: "cool", emoji: "🧥", label: "ひんやりじめっと", sub: "湿った冷たさです。上着が一枚あると安心です" }
+      : { tone: "cool", emoji: "🧥", label: "ひんやり", sub: "上着が一枚あると安心です" };
   } else if (f >= 7) {
     m = { tone: "cold", emoji: "🧣", label: "肌寒い", sub: "しっかり羽織って出かけたい寒さです" };
   } else if (f >= 1) {
@@ -534,7 +546,7 @@ function moodOf(w) {
 
   const extras = [];
   if (snowing) extras.push("雪で足元が冷えます");
-  else if (raining) extras.push("雨で空気が湿っぽくなっています");
+  else if (raining) extras.push(h != null && h >= 90 ? "雨で服も髪も乾きにくいです" : "雨で空気が湿っぽくなっています");
   else if (h != null && h <= 35 && f < 27) extras.push("空気がかなり乾いています");
   const ws = windSense(w.windDirection, v, h, f);
   if (ws) extras.push(ws);
