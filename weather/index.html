@@ -476,6 +476,22 @@ function windSense(dir, v, h, f) {
   return north ? `${name}の風が冷たく刺さります` : `${name}の風が身にしみます`;
 }
 
+// ---------- 熱中症の目安（暑さ指数 WBGT の簡易推定） ----------
+// 気温と湿度からの推定式（日本生気象学会の早見表を近似した式）。これは日陰の値なので、
+// 日中に晴れていれば日なたのぶん +2 を足す。段階は日本生気象学会の指針に合わせる
+function heatWarning(w) {
+  const t = w.temp, h = w.humidity;
+  if (t == null || h == null || t < 25) return null;
+  let wbgt = 0.725 * t + 0.0368 * h + 0.00364 * t * h - 3.246;
+  const hour = w.observedAt ? w.observedAt.getHours() : new Date().getHours();
+  const sunny = w.condition && ["快晴", "晴れ", "晴れ時々くもり"].includes(w.condition.label);
+  if (sunny && hour >= 9 && hour <= 16) wbgt += 2;
+  if (wbgt >= 31) return "熱中症の危険レベルです。外出は涼しい時間に回し、出るなら水と塩分を";
+  if (wbgt >= 28) return "熱中症に厳重警戒。水筒と塩あめを持って、日陰を選んで歩きましょう";
+  if (wbgt >= 25) return "熱中症に警戒。出かける前にコップ1杯の水を、水筒も忘れずに";
+  return null;
+}
+
 function moodOf(w) {
   const f = w.feelsLike != null ? w.feelsLike : w.temp;
   if (f == null) return null;
@@ -545,6 +561,8 @@ function moodOf(w) {
   }
 
   const extras = [];
+  const heat = heatWarning(w);
+  if (heat) extras.push(heat);           // 命に関わるので先頭に置く
   if (snowing) extras.push("雪で足元が冷えます");
   else if (raining) extras.push(h != null && h >= 90 ? "雨で服も髪も乾きにくいです" : "雨で空気が湿っぽくなっています");
   // 冬の乾燥は静電気の季節。出かける前にできる一手を添える（湿度40%以下で起きやすい）
