@@ -547,6 +547,8 @@ function moodOf(w) {
   const extras = [];
   if (snowing) extras.push("雪で足元が冷えます");
   else if (raining) extras.push(h != null && h >= 90 ? "雨で服も髪も乾きにくいです" : "雨で空気が湿っぽくなっています");
+  // 冬の乾燥は静電気の季節。出かける前にできる一手を添える（湿度40%以下で起きやすい）
+  else if (h != null && h <= 40 && w.temp != null && w.temp <= 15) extras.push("静電気が起きやすい乾燥です。出かける前にハンドクリームを");
   else if (h != null && h <= 35 && f < 27) extras.push("空気がかなり乾いています");
   const ws = windSense(w.windDirection, v, h, f);
   if (ws) extras.push(ws);
