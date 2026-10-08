@@ -1018,6 +1018,18 @@ h3 {
     margin-top: 20px;
 }
 
+.footer-operator {
+    margin-bottom: 8px;
+}
+
+.footer-operator a {
+    color: #aaa;
+}
+
+.footer-operator a:hover {
+    color: #fff;
+}
+
 /* Footer SNS */
 .footer-sns {
     display: flex;
