@@ -225,7 +225,7 @@ h1::before,h1::after{content:"";display:block;width:34px;height:2px;border-radiu
   <button class="btn" id="btnStart">▶ スタート</button>
   <button class="btn" id="btnReset">リセット</button>
 </div>
-<p id="hint">バーは残り時間。時間が減ると右（青）から消えていきます<br>スタート時の「ピッ」が終了アラームと同じ音量です<br>振動はAndroid端末のみ対応（iPhoneのSafariは仕様上非対応です）</p>
+<p id="hint">バーは残り時間。時間が減ると右（青）から消えていきます<br>スタート時の声（音声カウントOFFなら「ピッ」）が音量の目安です<br>振動はAndroid端末のみ対応（iPhoneのSafariは仕様上非対応です）</p>
 
 <div id="settings">
   <div class="setRow">
@@ -364,7 +364,7 @@ PRESETS.forEach(min=>{
   b.addEventListener("click",()=>{if(state!=="idle")return;total=min*60;remainMs=total*1000;save();syncWheels();render();});
   presetsEl.appendChild(b);
 });
-function save(){localStorage.setItem("dur",total);}
+function save(){localStorage.setItem("dur",total);prepStartVoice();}
 
 /* くるくるダイヤル */
 const ROWH=38;
@@ -427,9 +427,9 @@ function saveRun(){
 }
 
 function start(){
-  unlockAudio();
-  playStartBeep();
-  voiceFired=new Set();
+  const resumed=state==="pause";
+  playStartSound(resumed); // タップの中で鳴らす＝これが再生許可の取得も兼ねる
+  if(!resumed)voiceFired=new Set();
   endAt=Date.now()+remainMs;
   state="run";
   timerId=setInterval(tick,200);
@@ -472,11 +472,25 @@ btnStart.addEventListener("click",()=>{
 btnReset.addEventListener("click",reset);
 device.addEventListener("click",()=>{if(state==="alarm")reset();});
 
-/* ===== アラーム音 =====
+/* ===== 音の出口（v1.8・2026-10-15 作り直し） =====
    WebAudioはiPhoneの消音スイッチONだと鳴らないため、
-   動画再生と同じ扱いになる audio 要素（WAVをその場で生成）で鳴らす */
+   動画再生と同じ扱いになる audio 要素（WAVをその場で生成）で鳴らす。
+   以前は音ごとに14個の audio 要素を持ち、最初のタップで全部を消音で一瞬鳴らして許可を取っていた。
+   iPhoneは一度に1つしか鳴らせないため、許可取りの「止める」が本番の「ピッ」を消したり、
+   消音が外れて「あと1分なのだ」が漏れたりしていた。
+   いまは出口を audio 要素1つにまとめ、src を差し替えて鳴らす。許可取りは無音の音で行うので、漏れても無音 */
 let beepInt=null,audioReady=false;
 try{if("audioSession"in navigator)navigator.audioSession.type="playback";}catch(e){}
+function pcmToURL(pcm,sr){
+  const buf=new ArrayBuffer(44+pcm.length*2),dv=new DataView(buf);
+  const ws=(o,s)=>{for(let i=0;i<s.length;i++)dv.setUint8(o+i,s.charCodeAt(i));};
+  ws(0,"RIFF");dv.setUint32(4,36+pcm.length*2,true);ws(8,"WAVE");
+  ws(12,"fmt ");dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,1,true);
+  dv.setUint32(24,sr,true);dv.setUint32(28,sr*2,true);dv.setUint16(32,2,true);dv.setUint16(34,16,true);
+  ws(36,"data");dv.setUint32(40,pcm.length*2,true);
+  new Int16Array(buf,44).set(pcm);
+  return URL.createObjectURL(new Blob([buf],{type:"audio/wav"}));
+}
 function buildBeepWav(n){ // 2200Hz矩形波×n連ピ（振幅95%）のWAVを生成
   const sr=22050,beepN=Math.floor(sr*0.11),gapN=Math.floor(sr*0.07);
   const pcm=new Int16Array(n*(beepN+gapN));
@@ -487,43 +501,37 @@ function buildBeepWav(n){ // 2200Hz矩形波×n連ピ（振幅95%）のWAVを生
       pcm[off+i]=(Math.sin(2*Math.PI*2200*i/sr)>=0?1:-1)*0.95*env*32767;
     }
   }
-  const buf=new ArrayBuffer(44+pcm.length*2),dv=new DataView(buf);
-  const ws=(o,s)=>{for(let i=0;i<s.length;i++)dv.setUint8(o+i,s.charCodeAt(i));};
-  ws(0,"RIFF");dv.setUint32(4,36+pcm.length*2,true);ws(8,"WAVE");
-  ws(12,"fmt ");dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,1,true);
-  dv.setUint32(24,sr,true);dv.setUint32(28,sr*2,true);dv.setUint16(32,2,true);dv.setUint16(34,16,true);
-  ws(36,"data");dv.setUint32(40,pcm.length*2,true);
-  new Int16Array(buf,44).set(pcm);
-  return URL.createObjectURL(new Blob([buf],{type:"audio/wav"}));
+  return pcmToURL(pcm,sr);
 }
-const alarmAudio=new Audio(buildBeepWav(4));
-alarmAudio.setAttribute("playsinline","");
-const startAudio=new Audio(buildBeepWav(1)); // スタート時の「ピッ」＝アラームと同音色・同音量（音量の目安）
-startAudio.setAttribute("playsinline","");
+const ALARM_URL=buildBeepWav(4);
+const BEEP_URL=buildBeepWav(1); // 声OFFのときのスタート音「ピッ」＝アラームと同音色・同音量（音量の目安）
+const SILENT_URL=pcmToURL(new Int16Array(2205),22050);
+const player=new Audio();
+player.setAttribute("playsinline","");
+function playURL(url){
+  if(!url)return;
+  player.src=url;
+  audioReady=true;
+  // 差し替えで前の再生が打ち切られた AbortError は気にしない。許可が無いときだけ次のタップで取り直す
+  player.play().catch(e=>{if(e&&e.name==="NotAllowedError")audioReady=false;});
+}
+function unlockAudio(){ // タップ（ユーザー操作）のときに無音を鳴らして再生許可を得る
+  if(audioReady)return;
+  playURL(SILENT_URL);
+}
 
 /* ===== 音声カウント（ずんだもん・VOICEVOX事前生成） =====
-   alarmAudio/startAudio と同じく BlobURL 化する。
-   外部ファイルを直接 src にすると、iOSではネットワーク読み込みの遅延で
-   ユーザー操作起因の解錠（unlockAudio）とタイミングがずれ、
-   サイレントモード時に鳴らないことがあるため */
+   外部ファイルを直接 src にすると、iOSではネットワーク読み込みの遅延で鳴らないことがあるため、
+   fetch して BlobURL にしておく */
 const VOICE_NAMES=["m1","s30","c10","c9","c8","c7","c6","c5","c4","c3","c2","c1"];
-const voiceAudios={};
-async function loadVoice(name){
-  try{
-    const blob=await fetch(`voice/${name}.wav`).then(r=>r.blob());
-    const a=new Audio(URL.createObjectURL(blob));
-    a.setAttribute("playsinline","");
-    voiceAudios[name]=a;
-    if(audioReady)unlockOne(a); // 読み込みが遅れて解錠済みの後に届いた場合の保険
-  }catch(e){}
-}
-VOICE_NAMES.forEach(loadVoice);
+const voiceURLs={};
+VOICE_NAMES.forEach(async name=>{
+  try{voiceURLs[name]=URL.createObjectURL(await fetch(`voice/${name}.wav`).then(r=>r.blob()));}catch(e){}
+});
 let voiceFired=new Set();
 function playVoice(name){
   if(!voiceOn)return;
-  const a=voiceAudios[name];
-  if(!a)return;
-  a.currentTime=0;a.play().catch(()=>{});
+  playURL(voiceURLs[name]);
 }
 function checkVoiceCues(remainMs){
   if(!voiceOn)return;
@@ -533,25 +541,60 @@ function checkVoiceCues(remainMs){
   if(sec>=1&&sec<=10&&!voiceFired.has(sec)){voiceFired.add(sec);playVoice("c"+sec);}
 }
 
-function unlockOne(a){
-  a.muted=true;
-  const p=a.play();
-  if(p)p.then(()=>{a.pause();a.currentTime=0;a.muted=false;}).catch(()=>{a.muted=false;});
+/* ===== スタートの声「5分、スタートなのだ」 =====
+   声は voice/start/ に部品で置いてある（m1〜m99＝○分、s1〜s59＝○秒、start、resume。24kHz・16bit・モノラル）。
+   タップの瞬間に同期で鳴らさないと iPhone に止められるので、時間を合わせた時点で部品を先に読み込み、
+   スタート時はつなぎ合わせるだけにする。部品が間に合わなければ「スタートなのだ」だけ、それも無ければ「ピッ」 */
+const PART_SR=24000;
+const parts={}; // name -> Int16Array（読み込み中は null）
+function loadPart(name){
+  if(name in parts)return;
+  parts[name]=null;
+  fetch(`voice/start/${name}.wav`).then(r=>r.ok?r.arrayBuffer():Promise.reject())
+    .then(buf=>{parts[name]=new Int16Array(buf.slice(44));})
+    .catch(()=>{delete parts[name];});
 }
-function unlockAudio(){ // スタート押下（ユーザー操作）時に一度だけ無音再生して再生許可を得る
-  if(audioReady)return;
-  [alarmAudio,startAudio,...Object.values(voiceAudios)].forEach(unlockOne);
-  audioReady=true;
+function partsFor(sec){
+  const m=Math.floor(sec/60),s=sec%60,list=[];
+  if(m)list.push("m"+m);
+  if(s)list.push("s"+s);
+  return list;
 }
-function playStartBeep(){startAudio.currentTime=0;startAudio.play().catch(()=>{});}
-function playBeep(){alarmAudio.currentTime=0;alarmAudio.play().catch(()=>{});}
+function prepStartVoice(){
+  loadPart("start");loadPart("resume");
+  partsFor(total).forEach(loadPart);
+}
+const phraseCache={};
+let resumeURL=null;
+function startPhraseURL(sec){
+  if(phraseCache[sec])return phraseCache[sec];
+  const names=partsFor(sec);
+  if(!parts.start)return null;
+  const ready=names.every(n=>parts[n]);
+  const gap=n=>new Int16Array(Math.floor(PART_SR*n));
+  const seq=ready?[...names.flatMap((n,i)=>i?[gap(0.05),parts[n]]:[parts[n]]),gap(0.18),parts.start]:[parts.start];
+  const pcm=new Int16Array(seq.reduce((a,p)=>a+p.length,0));
+  let off=0;for(const p of seq){pcm.set(p,off);off+=p.length;}
+  const url=pcmToURL(pcm,PART_SR);
+  if(ready)phraseCache[sec]=url;
+  return url;
+}
+function playStartSound(resumed){
+  if(!voiceOn){playURL(BEEP_URL);return;}
+  let url=null;
+  if(!resumed)url=startPhraseURL(total);
+  else if(parts.resume)url=resumeURL||(resumeURL=pcmToURL(parts.resume,PART_SR));
+  playURL(url||BEEP_URL);
+}
+
+function playBeep(){playURL(ALARM_URL);}
 function startBeeps(){playBeep();beepInt=setInterval(playBeep,1200);}
 function vibrateAlarm(){ // iPhoneのSafariはVibration API非対応のため実質Android向け
   if(navigator.vibrate)navigator.vibrate([300,150,300,150,300,150,300,150,300]);
 }
 function stopAlarm(){
   if(beepInt){clearInterval(beepInt);beepInt=null;}
-  alarmAudio.pause();alarmAudio.currentTime=0;
+  if(player.src===ALARM_URL)player.pause();
   if(alarmTimer){clearTimeout(alarmTimer);alarmTimer=null;}
   if(navigator.vibrate)navigator.vibrate(0);
 }
@@ -604,6 +647,7 @@ document.addEventListener("pointerdown",()=>{
 },{passive:true});
 
 restoreRun();
+prepStartVoice();
 render();
 syncWheels();
 if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js");
