@@ -46,7 +46,7 @@ ITやAIにくわしくない方、お店を営む方、フリーランスの方�
 
 - AI活用: ChatGPT・Claude など各種AIツール、AI-Driven Design、画像生成・コピーライティング、Claude Code
 - フロントエンド: HTML5, CSS3, JavaScript, Google Apps Script
-- CMS: WordPress（カスタムブロックテーマ開発）
+- CMS: WordPress（カスタムブロックテーマ開発）、EmDash（CloudflareのCMS。WordPressからの移し替え）
 - インフラ: Docker, Linux（Ubuntu Server）, Git/GitHub
 
 ---
@@ -59,8 +59,8 @@ ITやAIにくわしくない方、お店を営む方、フリーランスの方�
 - AETHER ARCHITECTS: アニメーション多用の建築設計事務所デモサイト
 - Bloom: ライフスタイルメディアのデモサイト
 - 大黒庵: 地域の和菓子店をAIで復元したデモサイト
-- South India Guide: WordPressブロックテーマによる情報ガイドサイト
-- 紫式部ポータル: WordPress + Claude Code による平安文学ポータルサイト
+- South India Guide: 南インドの情報ガイドサイト。WordPressブロックテーマで作り、CloudflareのEmDashで作り直した（https://india.jw-club.click/ 、WordPress版も公開）
+- 紫式部ポータル: 平安文学ポータルサイト。WordPress + Claude Code で作り、CloudflareのEmDashで作り直した（https://genji.jw-club.click/ 、WordPress版も公開）
 
 ---
 

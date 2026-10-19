@@ -1269,6 +1269,38 @@ h3 {
     letter-spacing: 0.03em;
 }
 
+.work-badge-emdash {
+    display: inline-block;
+    background: #F38020;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+    letter-spacing: 0.03em;
+}
+
+.work-badge-sub {
+    display: inline-block;
+    background: #fff;
+    color: #21759b;
+    border: 1px solid #21759b;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+    margin-left: 4px;
+}
+
+.btn-link-sub {
+    margin-left: 16px;
+    color: #21759b;
+    border-color: #21759b;
+    font-size: 0.9rem;
+}
+
 .work-badge-app {
     display: inline-block;
     background: #DD6B35;
