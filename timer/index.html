@@ -155,6 +155,35 @@ h1::before,h1::after{content:"";display:block;width:34px;height:2px;border-radiu
 #btnStart.pause{background:linear-gradient(135deg,#7c8894,#55606b)}
 #btnReset{flex:.6;background:var(--card-bg);color:var(--sub-ink)}
 .disabled{opacity:.35;pointer-events:none}
+/* 音量スライダー（v1.9）。--pct まで色を塗る。touch-action:none でドラッグをスクロールに取られないように */
+#volCard{
+  width:100%;max-width:560px;display:flex;align-items:center;gap:12px;
+  background:var(--card-bg);border-radius:18px;padding:6px 18px;
+  box-shadow:0 2px 6px rgba(90,55,20,.12);
+}
+#volIcon{font-size:20px;flex-shrink:0}
+#volVal{width:46px;flex-shrink:0;text-align:right;font-size:15px;font-weight:700;color:var(--sub-ink);font-variant-numeric:tabular-nums}
+#volSlider{
+  --pct:100%;
+  flex:1;min-width:0;height:44px;margin:0;background:transparent;
+  -webkit-appearance:none;appearance:none;touch-action:none;cursor:pointer;
+}
+#volSlider::-webkit-slider-runnable-track{
+  height:10px;border-radius:5px;
+  background:linear-gradient(to right,var(--orange-soft) var(--pct),var(--peach) var(--pct));
+}
+#volSlider::-moz-range-track{
+  height:10px;border-radius:5px;
+  background:linear-gradient(to right,var(--orange-soft) var(--pct),var(--peach) var(--pct));
+}
+#volSlider::-webkit-slider-thumb{
+  -webkit-appearance:none;width:30px;height:30px;margin-top:-10px;border-radius:50%;
+  background:#fff;border:3px solid var(--orange);box-shadow:0 2px 5px rgba(0,0,0,.28);
+}
+#volSlider::-moz-range-thumb{
+  width:24px;height:24px;border-radius:50%;
+  background:#fff;border:3px solid var(--orange);box-shadow:0 2px 5px rgba(0,0,0,.28);
+}
 #resumeNote{margin:10px auto 0;max-width:420px;font-size:13px;font-weight:700;color:var(--ink);background:var(--orange-soft);border-radius:12px;padding:8px 12px;text-align:center;line-height:1.6}
 #resumeNote[hidden]{display:none}
 #hint{font-size:12px;color:var(--sub-ink);text-align:center;line-height:1.7}
@@ -225,7 +254,12 @@ h1::before,h1::after{content:"";display:block;width:34px;height:2px;border-radiu
   <button class="btn" id="btnStart">▶ スタート</button>
   <button class="btn" id="btnReset">リセット</button>
 </div>
-<p id="hint">バーは残り時間。時間が減ると右（青）から消えていきます<br>スタート時の声（音声カウントOFFなら「ピッ」）が音量の目安です<br>振動はAndroid端末のみ対応（iPhoneのSafariは仕様上非対応です）</p>
+<div id="volCard">
+  <span id="volIcon" aria-hidden="true">🔊</span>
+  <input type="range" id="volSlider" min="10" max="100" step="5" value="100" aria-label="音量">
+  <span id="volVal">100%</span>
+</div>
+<p id="hint">バーは残り時間。時間が減ると右（青）から消えていきます<br>指を離すと鳴る「ポン」が音量の目安です<br>振動はAndroid端末のみ対応（iPhoneのSafariは仕様上非対応です）</p>
 
 <div id="settings">
   <div class="setRow">
@@ -250,7 +284,7 @@ h1::before,h1::after{content:"";display:block;width:34px;height:2px;border-radiu
     <span class="url">hideharu.site/timer/</span>
   </div>
 </div>
-<p id="ver">バータイマー v1.7（2026-09-23）</p>
+<p id="ver">バータイマー v1.9.3（2026-11-01）</p>
 
 <script>
 "use strict";
@@ -491,7 +525,86 @@ function pcmToURL(pcm,sr){
   new Int16Array(buf,44).set(pcm);
   return URL.createObjectURL(new Blob([buf],{type:"audio/wav"}));
 }
-function buildBeepWav(n){ // 2200Hz矩形波×n連ピ（振幅95%）のWAVを生成
+/* ===== 音量（v1.9・2026-11-01） =====
+   iPhone の audio 要素は volume への代入を無視するので、player.volume では効かない。
+   音はすべて元の波形（PCM）で持ち、鳴らすときに音量ぶん小さくしたWAVを作って渡す。
+   Web Audio にしないのはサイレントモードで鳴らすため（v1.1の理由のまま）。
+   耳の感じ方に合わせて2乗カーブ（50%で元の1/4の振幅＝約-12dB）。
+   タイマーは鳴らないのが一番困るので、最小は0でなく10% */
+const VOL_MIN=10,VOL_MAX=100;
+let volume=Math.max(VOL_MIN,Math.min(VOL_MAX,+(localStorage.getItem("volume")||VOL_MAX)||VOL_MAX));
+function makeSound(pcm,sr){return{pcm,sr,url:null,vol:0};}
+function soundURL(snd){ // いまの音量のWAVを返す。同じ音量なら作り直さない
+  if(snd.url&&snd.vol===volume)return snd.url;
+  const old=snd.url,g=(volume/VOL_MAX)**2;
+  let pcm=snd.pcm;
+  if(g<1){pcm=new Int16Array(pcm.length);for(let i=0;i<pcm.length;i++)pcm[i]=Math.round(snd.pcm[i]*g);}
+  snd.url=pcmToURL(pcm,snd.sr);snd.vol=volume;
+  if(old&&player.src!==old)URL.revokeObjectURL(old); // 再生中のものは消さない
+  return snd.url;
+}
+function parseWav(buf){ // 16bitモノラルのWAVから PCM を取り出す（LISTなどの余分な区画は飛ばす）
+  const dv=new DataView(buf);
+  let sr=24000;
+  for(let i=12;i+8<=buf.byteLength;){
+    const id=String.fromCharCode(dv.getUint8(i),dv.getUint8(i+1),dv.getUint8(i+2),dv.getUint8(i+3));
+    const size=dv.getUint32(i+4,true);
+    if(id==="fmt ")sr=dv.getUint32(i+12,true);
+    if(id==="data"){
+      const n=Math.floor(Math.min(size,buf.byteLength-i-8)/2);
+      return makeSound(new Int16Array(buf.slice(i+8,i+8+n*2)),sr);
+    }
+    i+=8+size+(size&1);
+  }
+  return null;
+}
+function buildPon(){ // 音量の目安の「ポン」。たたいてドラムのハンドパン（drum/handpan.js）の「ラ」440Hzを移植
+  // ハンドパンは Web Audio だがサイレントモードで鳴らないので、同じ計算でWAVを作る。
+  // 倍音・音程の落ち着き方・ローパス・指の「ぺち」は同じで、変えたのは余韻（sus 3.0→1.6秒）とリバーブなしだけ。
+  // 実機の聞こえ方の履歴: 高い音を下げる→「チュー」、硬く短い→「トン」、純音に近い880Hz→「パン」
+  const sr=44100,f0=440,sus=1.6,vel=0.8,toneN=Math.floor(sr*sus),tailN=Math.floor(sr*0.5);
+  const PARTIALS=[[1,1,1],[1.0022,0.28,0.85],[2,0.42,0.55],[3,0.16,0.32],[4.02,0.04,0.15]]; // [倍率,強さ,余韻の割合]
+  const biquad=(type,fc,Q)=>{
+    const w=2*Math.PI*Math.min(fc,sr*0.45)/sr,c=Math.cos(w),al=Math.sin(w)/(2*Q),a0=1+al;
+    const b=type==="lp"?[(1-c)/2,1-c,(1-c)/2]:[al,0,-al];
+    return[b[0]/a0,b[1]/a0,b[2]/a0,-2*c/a0,(1-al)/a0];
+  };
+  const out=new Float64Array(toneN+tailN);
+  const phase=PARTIALS.map(()=>0),floorGain=Math.log(1e-4);
+  const bp=biquad("bp",2400,0.8);
+  let z1=0,z2=0,n1=0,n2=0,lp=null;
+  for(let i=0;i<toneN;i++){
+    const t=i/sr;
+    let x=0;
+    PARTIALS.forEach(([r,a,d],k)=>{
+      phase[k]+=2*Math.PI*f0*r*(1+0.004*Math.exp(-t/0.03))/sr; // ほんの少し高くから落ち着く
+      const dur=sus*d;
+      if(t>=dur)return;
+      const g=t<0.004?Math.exp(floorGain*(1-t/0.004)):Math.exp(floorGain*(t-0.004)/(dur-0.004));
+      x+=Math.sin(phase[k])*a*g;
+    });
+    // たたいた瞬間だけ明るく、すぐ丸くなる
+    if(i%32===0){
+      const hi=f0*(6+vel*10),lo=f0*3.2;
+      lp=biquad("lp",t<0.01?hi:lo+(hi-lo)*Math.exp(-(t-0.01)/0.12),0.7);
+    }
+    const y=lp[0]*x+z1;z1=lp[1]*x-lp[3]*y+z2;z2=lp[2]*x-lp[4]*y;
+    out[i]=y*vel*0.28;
+    // 指先が当たる「ぺち」
+    if(t<0.03){
+      const ng=t<0.002?Math.exp(floorGain*(1-t/0.002)):Math.exp(floorGain*(t-0.002)/0.028);
+      const nx=(Math.random()*2-1)*ng*0.05*vel;
+      const ny=bp[0]*nx+n1;n1=bp[1]*nx-bp[3]*ny+n2;n2=bp[2]*nx-bp[4]*ny;
+      out[i]+=ny;
+    }
+  }
+  let peak=0;for(let i=0;i<toneN;i++)peak=Math.max(peak,Math.abs(out[i]));
+  const pcm=new Int16Array(out.length);
+  for(let i=0;i<toneN;i++)pcm[i]=out[i]/peak*0.95*32767*Math.min(1,(toneN-i)/(sr*0.02));
+  return makeSound(pcm,sr);
+}
+
+function buildBeepPCM(n){ // 2200Hz矩形波×n連ピ（振幅95%）を生成
   const sr=22050,beepN=Math.floor(sr*0.11),gapN=Math.floor(sr*0.07);
   const pcm=new Int16Array(n*(beepN+gapN));
   for(let b=0;b<n;b++){
@@ -501,10 +614,11 @@ function buildBeepWav(n){ // 2200Hz矩形波×n連ピ（振幅95%）のWAVを生
       pcm[off+i]=(Math.sin(2*Math.PI*2200*i/sr)>=0?1:-1)*0.95*env*32767;
     }
   }
-  return pcmToURL(pcm,sr);
+  return makeSound(pcm,sr);
 }
-const ALARM_URL=buildBeepWav(4);
-const BEEP_URL=buildBeepWav(1); // 声OFFのときのスタート音「ピッ」＝アラームと同音色・同音量（音量の目安）
+const ALARM=buildBeepPCM(4);
+const BEEP=buildBeepPCM(1); // 声OFFのときのスタート音「ピッ」＝アラームと同音色・同音量
+const PON=buildPon();
 const SILENT_URL=pcmToURL(new Int16Array(2205),22050);
 const player=new Audio();
 player.setAttribute("playsinline","");
@@ -515,23 +629,39 @@ function playURL(url){
   // 差し替えで前の再生が打ち切られた AbortError は気にしない。許可が無いときだけ次のタップで取り直す
   player.play().catch(e=>{if(e&&e.name==="NotAllowedError")audioReady=false;});
 }
+function playSound(snd){if(snd)playURL(soundURL(snd));}
 function unlockAudio(){ // タップ（ユーザー操作）のときに無音を鳴らして再生許可を得る
   if(audioReady)return;
   playURL(SILENT_URL);
 }
 
+/* 音量スライダー: 動かしている間は数字だけ変え、指を離したら（change）その音量で「ポン」 */
+const volSlider=document.getElementById("volSlider"),volVal=document.getElementById("volVal");
+function showVolume(){
+  volSlider.value=volume;
+  volVal.textContent=volume+"%";
+  volSlider.style.setProperty("--pct",(volume-VOL_MIN)/(VOL_MAX-VOL_MIN)*100+"%");
+}
+volSlider.addEventListener("input",()=>{volume=+volSlider.value;showVolume();});
+volSlider.addEventListener("change",()=>{
+  volume=+volSlider.value;showVolume();
+  try{localStorage.setItem("volume",volume);}catch(e){}
+  playSound(PON);
+});
+showVolume();
+
 /* ===== 音声カウント（ずんだもん・VOICEVOX事前生成） =====
    外部ファイルを直接 src にすると、iOSではネットワーク読み込みの遅延で鳴らないことがあるため、
-   fetch して BlobURL にしておく */
+   fetch して手元に持っておく（鳴らすときに音量を合わせて BlobURL にする） */
 const VOICE_NAMES=["m1","s30","c10","c9","c8","c7","c6","c5","c4","c3","c2","c1"];
-const voiceURLs={};
+const voices={};
 VOICE_NAMES.forEach(async name=>{
-  try{voiceURLs[name]=URL.createObjectURL(await fetch(`voice/${name}.wav`).then(r=>r.blob()));}catch(e){}
+  try{voices[name]=parseWav(await fetch(`voice/${name}.wav`).then(r=>r.arrayBuffer()));}catch(e){}
 });
 let voiceFired=new Set();
 function playVoice(name){
   if(!voiceOn)return;
-  playURL(voiceURLs[name]);
+  playSound(voices[name]);
 }
 function checkVoiceCues(remainMs){
   if(!voiceOn)return;
@@ -565,8 +695,8 @@ function prepStartVoice(){
   partsFor(total).forEach(loadPart);
 }
 const phraseCache={};
-let resumeURL=null;
-function startPhraseURL(sec){
+let resumeSnd=null;
+function startPhrase(sec){
   if(phraseCache[sec])return phraseCache[sec];
   const names=partsFor(sec);
   if(!parts.start)return null;
@@ -575,26 +705,26 @@ function startPhraseURL(sec){
   const seq=ready?[...names.flatMap((n,i)=>i?[gap(0.05),parts[n]]:[parts[n]]),gap(0.18),parts.start]:[parts.start];
   const pcm=new Int16Array(seq.reduce((a,p)=>a+p.length,0));
   let off=0;for(const p of seq){pcm.set(p,off);off+=p.length;}
-  const url=pcmToURL(pcm,PART_SR);
-  if(ready)phraseCache[sec]=url;
-  return url;
+  const snd=makeSound(pcm,PART_SR);
+  if(ready)phraseCache[sec]=snd;
+  return snd;
 }
 function playStartSound(resumed){
-  if(!voiceOn){playURL(BEEP_URL);return;}
-  let url=null;
-  if(!resumed)url=startPhraseURL(total);
-  else if(parts.resume)url=resumeURL||(resumeURL=pcmToURL(parts.resume,PART_SR));
-  playURL(url||BEEP_URL);
+  if(!voiceOn){playSound(BEEP);return;}
+  let snd=null;
+  if(!resumed)snd=startPhrase(total);
+  else if(parts.resume)snd=resumeSnd||(resumeSnd=makeSound(parts.resume,PART_SR));
+  playSound(snd||BEEP);
 }
 
-function playBeep(){playURL(ALARM_URL);}
+function playBeep(){playSound(ALARM);}
 function startBeeps(){playBeep();beepInt=setInterval(playBeep,1200);}
 function vibrateAlarm(){ // iPhoneのSafariはVibration API非対応のため実質Android向け
   if(navigator.vibrate)navigator.vibrate([300,150,300,150,300,150,300,150,300]);
 }
 function stopAlarm(){
   if(beepInt){clearInterval(beepInt);beepInt=null;}
-  if(player.src===ALARM_URL)player.pause();
+  if(ALARM.url&&player.src===ALARM.url)player.pause();
   if(alarmTimer){clearTimeout(alarmTimer);alarmTimer=null;}
   if(navigator.vibrate)navigator.vibrate(0);
 }
