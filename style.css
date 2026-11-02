@@ -617,6 +617,26 @@ h3 {
     color: #888;
 }
 
+.pricing-subhead {
+    text-align: center;
+    margin: 70px 0 30px;
+}
+
+.pricing-subhead h3 {
+    font-size: 1.4rem;
+    color: var(--color-primary);
+    margin-bottom: 10px;
+}
+
+.pricing-subhead p {
+    color: #555;
+}
+
+.pricing-grid--update {
+    max-width: 640px;
+    margin: 0 auto;
+}
+
 /* Help Section（こんなお手伝いができます） */
 .help-lead {
     text-align: center;
