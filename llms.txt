@@ -47,6 +47,7 @@ ITやAIにくわしくない方、お店を営む方、フリーランスの方�
 - AI活用: ChatGPT・Claude など各種AIツール、AI-Driven Design、画像生成・コピーライティング、Claude Code
 - フロントエンド: HTML5, CSS3, JavaScript, Google Apps Script
 - CMS: WordPress（カスタムブロックテーマ開発）、EmDash（CloudflareのCMS。WordPressからの移し替え）
+- サイト制作の仕組み: Astro（管理画面のないサイト。更新をすべて任せたい方向け）
 - インフラ: Docker, Linux（Ubuntu Server）, Git/GitHub
 
 ---
@@ -74,6 +75,9 @@ A: チラシやメニューの文章づくり、SNS投稿、返信メールの�
 
 Q: ホームページ制作もできますか？
 A: はい。約10年のWeb実務経験とWordPressのカスタム開発実績があります。ホームページ作りは、お手伝いできることの中のひとつです。
+
+Q: サイトを作る仕組みは、どう選べばいいですか？
+A: 決め手は「公開したあと、だれが更新するか」です。ご自分で更新したい方にはWordPressかEmDash（予約やネット販売などの機能が要るならWordPress、紹介やお知らせが中心ならEmDash）、更新をぜんぶ任せたい方には管理画面のないAstroをご提案します。
 
 Q: AIって、情報が漏れたりして怖くないですか？
 A: その不安は大切です。だからこそ「安心して使えるところ」から始めます。心配な点も正直にお話ししながら進めます。
