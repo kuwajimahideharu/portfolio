@@ -155,36 +155,28 @@ h1::before,h1::after{content:"";display:block;width:34px;height:2px;border-radiu
 #btnStart.pause{background:linear-gradient(135deg,#7c8894,#55606b)}
 #btnReset{flex:.6;background:var(--card-bg);color:var(--sub-ink)}
 .disabled{opacity:.35;pointer-events:none}
-/* 音量スライダー（v1.9）。--pct まで色を塗る。touch-action:none でドラッグをスクロールに取られないように */
-#volCard{
-  width:100%;max-width:560px;display:flex;align-items:center;gap:12px;
-  background:var(--card-bg);border-radius:18px;padding:6px 18px;
-  box-shadow:0 2px 6px rgba(90,55,20,.12);
+#endNote{font-size:14px;font-weight:700;color:var(--sub-ink);text-align:center;letter-spacing:.04em;margin-top:-6px}
+#endNote[hidden]{display:none}
+.chip{-webkit-touch-callout:none}
+.chip.saved{animation:chipSaved .5s}
+@keyframes chipSaved{0%{transform:scale(1.12);background:var(--orange-soft);color:#fff}}
+/* 大きく表示（v1.11）: 動いている間だけ。バーと数字を画面いっぱいにし、操作はスタート／リセットだけ残す */
+body.big{
+  height:100dvh;overflow:hidden;gap:10px;
+  padding:calc(var(--safe-t) + 8px) max(14px,env(safe-area-inset-right)) calc(env(safe-area-inset-bottom) + 8px) max(14px,env(safe-area-inset-left));
 }
-#volIcon{font-size:20px;flex-shrink:0}
-#volVal{width:46px;flex-shrink:0;text-align:right;font-size:15px;font-weight:700;color:var(--sub-ink);font-variant-numeric:tabular-nums}
-#volSlider{
-  --pct:100%;
-  flex:1;min-width:0;height:44px;margin:0;background:transparent;
-  -webkit-appearance:none;appearance:none;touch-action:none;cursor:pointer;
+@media (orientation:landscape){
+  body.big{padding-top:max(8px,env(safe-area-inset-top))}
 }
-#volSlider::-webkit-slider-runnable-track{
-  height:10px;border-radius:5px;
-  background:linear-gradient(to right,var(--orange-soft) var(--pct),var(--peach) var(--pct));
-}
-#volSlider::-moz-range-track{
-  height:10px;border-radius:5px;
-  background:linear-gradient(to right,var(--orange-soft) var(--pct),var(--peach) var(--pct));
-}
-#volSlider::-webkit-slider-thumb{
-  -webkit-appearance:none;width:30px;height:30px;margin-top:-10px;border-radius:50%;
-  background:#fff;border:3px solid var(--orange);box-shadow:0 2px 5px rgba(0,0,0,.28);
-}
-#volSlider::-moz-range-thumb{
-  width:24px;height:24px;border-radius:50%;
-  background:#fff;border:3px solid var(--orange);box-shadow:0 2px 5px rgba(0,0,0,.28);
-}
-#resumeNote{margin:10px auto 0;max-width:420px;font-size:13px;font-weight:700;color:var(--ink);background:var(--orange-soft);border-radius:12px;padding:8px 12px;text-align:center;line-height:1.6}
+body.big h1,body.big #presets,body.big #picker,body.big #hint,body.big #settings,body.big #share,body.big #ver{display:none}
+body.big #device{flex:1;min-height:0;max-width:none}
+body.big #barwin{flex:1.6;min-height:0}
+body.big #lcd{flex:1;min-height:0}
+body.big #lcd svg{max-width:none;width:100%;height:100%}
+body.big #controls{max-width:none}
+body.big .btn{padding:11px 0}
+body.big #endNote{margin-top:0}
+#resumeNote{margin:10px auto 0;max-width:420px;font-size:13px;font-weight:700;color:#4a2a12;background:var(--orange-soft);border-radius:12px;padding:8px 12px;text-align:center;line-height:1.6}
 #resumeNote[hidden]{display:none}
 #hint{font-size:12px;color:var(--sub-ink);text-align:center;line-height:1.7}
 
@@ -226,7 +218,7 @@ h1::before,h1::after{content:"";display:block;width:34px;height:2px;border-radiu
   background:var(--card-bg);border-radius:18px;padding:16px 20px;
   box-shadow:0 4px 12px rgba(90,55,20,.12);
 }
-#share svg{width:96px;height:96px;display:block}
+#share svg{width:96px;height:96px;display:block;flex-shrink:0;background:#fff;padding:6px;border-radius:8px} /* 白い台紙＝ダークテーマでも読み取れるように */
 #shareTxt{display:flex;flex-direction:column;gap:4px}
 #shareTxt b{font-size:14px;color:var(--orange)}
 #shareTxt span{font-size:12px;color:var(--sub-ink);line-height:1.6}
@@ -243,6 +235,7 @@ h1::before,h1::after{content:"";display:block;width:34px;height:2px;border-radiu
 </div>
 <!-- 開き直して続きから動いているとき・終わってから戻ってきたときの一言（v1.7） -->
 <p id="resumeNote" hidden></p>
+<p id="endNote" hidden></p>
 
 <div id="presets"></div>
 <div id="picker">
@@ -254,12 +247,7 @@ h1::before,h1::after{content:"";display:block;width:34px;height:2px;border-radiu
   <button class="btn" id="btnStart">▶ スタート</button>
   <button class="btn" id="btnReset">リセット</button>
 </div>
-<div id="volCard">
-  <span id="volIcon" aria-hidden="true">🔊</span>
-  <input type="range" id="volSlider" min="10" max="100" step="5" value="100" aria-label="音量">
-  <span id="volVal">100%</span>
-</div>
-<p id="hint">バーは残り時間。時間が減ると右（青）から消えていきます<br>指を離すと鳴る「ポン」が音量の目安です<br>振動はAndroid端末のみ対応（iPhoneのSafariは仕様上非対応です）</p>
+<p id="hint">バーは残り時間。時間が減ると右（青）から消えていきます<br>スタートの声（声OFFなら「ピッ」）が音量の目安です<br>「○分」は長押しでダイヤルの時間に入れ替え（もう一度で戻る）<br>動いている間、バーをタップで大きく表示（横向きでも）<br>振動はAndroidのみ（iPhoneは仕様で非対応）</p>
 
 <div id="settings">
   <div class="setRow">
@@ -284,7 +272,7 @@ h1::before,h1::after{content:"";display:block;width:34px;height:2px;border-radiu
     <span class="url">hideharu.site/timer/</span>
   </div>
 </div>
-<p id="ver">バータイマー v1.9.3（2026-11-01）</p>
+<p id="ver">バータイマー v1.11（2026-11-10）</p>
 
 <script>
 "use strict";
@@ -387,15 +375,48 @@ const btnStart=document.getElementById("btnStart");
 const btnReset=document.getElementById("btnReset");
 const presetsEl=document.getElementById("presets");
 const pickerEl=document.getElementById("picker");
-const PRESETS=[1,3,5,10,15,30,45,60];
+const endNote=document.getElementById("endNote");
+const PRESETS=[1,3,5,10,15,30,45,60]; // 既定（分）
+// プリセットは長押しで、いまダイヤルにある時間に入れ替えられる（v1.11）。同じ時間でもう一度長押しすると既定に戻る
+let presetSecs=PRESETS.map(m=>m*60);
+try{
+  const a=JSON.parse(localStorage.getItem("presets")||"null");
+  if(Array.isArray(a)&&a.length===PRESETS.length&&a.every(v=>Number.isInteger(v)&&v>=10&&v<=5999))presetSecs=a;
+}catch(e){}
+function presetLabel(sec){const m=Math.floor(sec/60),s=sec%60;return !s?m+"分":(!m?s+"秒":m+":"+String(s).padStart(2,"0"));}
+// 大きく表示: バーをタップで切り替え（覚えておく）。スマホを横にしたときは自動
+let bigPref=localStorage.getItem("big")==="1";
+const phoneLandscape=matchMedia("(orientation:landscape) and (max-height:500px)");
 let total=+(localStorage.getItem("dur")||1800); // 秒
 let state="idle"; // idle|run|pause|alarm
 let endAt=0,remainMs=total*1000,timerId=null,wakeLock=null,alarmTimer=null;
 
-PRESETS.forEach(min=>{
+PRESETS.forEach((min,i)=>{
   const b=document.createElement("button");
-  b.className="chip";b.textContent=min+"分";b.dataset.sec=min*60;
-  b.addEventListener("click",()=>{if(state!=="idle")return;total=min*60;remainMs=total*1000;save();syncWheels();render();});
+  b.className="chip";
+  const show=()=>{b.textContent=presetLabel(presetSecs[i]);b.dataset.sec=presetSecs[i];};
+  show();
+  let holdTmr=null,held=false;
+  const cancel=()=>{clearTimeout(holdTmr);holdTmr=null;};
+  b.addEventListener("pointerdown",()=>{
+    held=false;cancel();
+    if(state!=="idle")return;
+    holdTmr=setTimeout(()=>{
+      held=true; // このあと指を離したときの click は「選ぶ」にしない
+      presetSecs[i]=presetSecs[i]===total?min*60:total;
+      try{localStorage.setItem("presets",JSON.stringify(presetSecs));}catch(e){}
+      show();render();
+      b.classList.toggle("saved",false);void b.offsetWidth;b.classList.toggle("saved",true);
+      if(navigator.vibrate)navigator.vibrate(30);
+    },600);
+  });
+  for(const ev of["pointerup","pointerleave","pointercancel"])b.addEventListener(ev,cancel);
+  b.addEventListener("contextmenu",e=>e.preventDefault());
+  b.addEventListener("click",()=>{
+    if(held){held=false;return;}
+    if(state!=="idle")return;
+    total=presetSecs[i];remainMs=total*1000;save();syncWheels();render();
+  });
   presetsEl.appendChild(b);
 });
 function save(){localStorage.setItem("dur",total);prepStartVoice();}
@@ -435,7 +456,20 @@ function render(){
   const settable=state==="idle";
   presetsEl.classList.toggle("disabled",!settable);
   pickerEl.classList.toggle("disabled",!settable);
-  btnStart.textContent=state==="run"?"⏸ 一時停止":(state==="pause"?"▶ 再開":"▶ スタート");
+  btnStart.textContent=state==="run"?"⏸ 一時停止":(state==="pause"?"▶ 再開":(state==="alarm"?"🔁 もう一回":"▶ スタート"));
+  btnReset.textContent=state==="alarm"?"止める":"リセット";
+  // 終わる時刻（動いている間だけ）
+  if(state==="run"){
+    const e=new Date(endAt);
+    endNote.textContent=`${e.getHours()}:${String(e.getMinutes()).padStart(2,"0")} に終わります`;
+  }else if(state==="pause")endNote.textContent="⏸ 一時停止中";
+  endNote.hidden=state!=="run"&&state!=="pause";
+  const big=state!=="idle"&&(bigPref||phoneLandscape.matches);
+  if(big!==document.body.classList.contains("big")){
+    document.body.classList.toggle("big",big);
+    if(big)scrollTo(0,0);
+    else syncWheels(); // 隠している間にダイヤルの位置が0へ戻るので合わせ直す
+  }
   btnStart.classList.toggle("pause",state==="run");
   device.classList.toggle("alarm",state==="alarm");
   document.title=state==="run"||state==="pause"?`${String(Math.floor(sec/60)).padStart(2,"0")}:${String(sec%60).padStart(2,"0")} - バータイマー`:"バータイマー";
@@ -500,11 +534,18 @@ function finish(){
 }
 
 btnStart.addEventListener("click",()=>{
-  if(state==="alarm"){reset();return;}
+  if(state==="alarm"){reset();start();return;} // もう一回＝同じ時間で始め直す
   if(state==="run")pause();else start();
 });
 btnReset.addEventListener("click",reset);
-device.addEventListener("click",()=>{if(state==="alarm")reset();});
+device.addEventListener("click",()=>{
+  if(state==="alarm"){reset();return;}
+  if(state==="idle")return;
+  bigPref=!bigPref;
+  try{localStorage.setItem("big",bigPref?"1":"0");}catch(e){}
+  render();
+});
+phoneLandscape.addEventListener("change",()=>render());
 
 /* ===== 音の出口（v1.8・2026-10-15 作り直し） =====
    WebAudioはiPhoneの消音スイッチONだと鳴らないため、
@@ -525,24 +566,11 @@ function pcmToURL(pcm,sr){
   new Int16Array(buf,44).set(pcm);
   return URL.createObjectURL(new Blob([buf],{type:"audio/wav"}));
 }
-/* ===== 音量（v1.9・2026-11-01） =====
-   iPhone の audio 要素は volume への代入を無視するので、player.volume では効かない。
-   音はすべて元の波形（PCM）で持ち、鳴らすときに音量ぶん小さくしたWAVを作って渡す。
-   Web Audio にしないのはサイレントモードで鳴らすため（v1.1の理由のまま）。
-   耳の感じ方に合わせて2乗カーブ（50%で元の1/4の振幅＝約-12dB）。
-   タイマーは鳴らないのが一番困るので、最小は0でなく10% */
-const VOL_MIN=10,VOL_MAX=100;
-let volume=Math.max(VOL_MIN,Math.min(VOL_MAX,+(localStorage.getItem("volume")||VOL_MAX)||VOL_MAX));
-function makeSound(pcm,sr){return{pcm,sr,url:null,vol:0};}
-function soundURL(snd){ // いまの音量のWAVを返す。同じ音量なら作り直さない
-  if(snd.url&&snd.vol===volume)return snd.url;
-  const old=snd.url,g=(volume/VOL_MAX)**2;
-  let pcm=snd.pcm;
-  if(g<1){pcm=new Int16Array(pcm.length);for(let i=0;i<pcm.length;i++)pcm[i]=Math.round(snd.pcm[i]*g);}
-  snd.url=pcmToURL(pcm,snd.sr);snd.vol=volume;
-  if(old&&player.src!==old)URL.revokeObjectURL(old); // 再生中のものは消さない
-  return snd.url;
-}
+/* 音は元の波形（PCM）で持ち、最初に鳴らすときにWAVにする（一度作ったら使い回す）。
+   v1.9 の音量スライダーは使わないので v1.10（2026-11-10）で外した。音量は本体のボタンで合わせる */
+try{localStorage.removeItem("volume");}catch(e){}
+function makeSound(pcm,sr){return{pcm,sr,url:null};}
+function soundURL(snd){return snd.url||(snd.url=pcmToURL(snd.pcm,snd.sr));}
 function parseWav(buf){ // 16bitモノラルのWAVから PCM を取り出す（LISTなどの余分な区画は飛ばす）
   const dv=new DataView(buf);
   let sr=24000;
@@ -558,52 +586,6 @@ function parseWav(buf){ // 16bitモノラルのWAVから PCM を取り出す（L
   }
   return null;
 }
-function buildPon(){ // 音量の目安の「ポン」。たたいてドラムのハンドパン（drum/handpan.js）の「ラ」440Hzを移植
-  // ハンドパンは Web Audio だがサイレントモードで鳴らないので、同じ計算でWAVを作る。
-  // 倍音・音程の落ち着き方・ローパス・指の「ぺち」は同じで、変えたのは余韻（sus 3.0→1.6秒）とリバーブなしだけ。
-  // 実機の聞こえ方の履歴: 高い音を下げる→「チュー」、硬く短い→「トン」、純音に近い880Hz→「パン」
-  const sr=44100,f0=440,sus=1.6,vel=0.8,toneN=Math.floor(sr*sus),tailN=Math.floor(sr*0.5);
-  const PARTIALS=[[1,1,1],[1.0022,0.28,0.85],[2,0.42,0.55],[3,0.16,0.32],[4.02,0.04,0.15]]; // [倍率,強さ,余韻の割合]
-  const biquad=(type,fc,Q)=>{
-    const w=2*Math.PI*Math.min(fc,sr*0.45)/sr,c=Math.cos(w),al=Math.sin(w)/(2*Q),a0=1+al;
-    const b=type==="lp"?[(1-c)/2,1-c,(1-c)/2]:[al,0,-al];
-    return[b[0]/a0,b[1]/a0,b[2]/a0,-2*c/a0,(1-al)/a0];
-  };
-  const out=new Float64Array(toneN+tailN);
-  const phase=PARTIALS.map(()=>0),floorGain=Math.log(1e-4);
-  const bp=biquad("bp",2400,0.8);
-  let z1=0,z2=0,n1=0,n2=0,lp=null;
-  for(let i=0;i<toneN;i++){
-    const t=i/sr;
-    let x=0;
-    PARTIALS.forEach(([r,a,d],k)=>{
-      phase[k]+=2*Math.PI*f0*r*(1+0.004*Math.exp(-t/0.03))/sr; // ほんの少し高くから落ち着く
-      const dur=sus*d;
-      if(t>=dur)return;
-      const g=t<0.004?Math.exp(floorGain*(1-t/0.004)):Math.exp(floorGain*(t-0.004)/(dur-0.004));
-      x+=Math.sin(phase[k])*a*g;
-    });
-    // たたいた瞬間だけ明るく、すぐ丸くなる
-    if(i%32===0){
-      const hi=f0*(6+vel*10),lo=f0*3.2;
-      lp=biquad("lp",t<0.01?hi:lo+(hi-lo)*Math.exp(-(t-0.01)/0.12),0.7);
-    }
-    const y=lp[0]*x+z1;z1=lp[1]*x-lp[3]*y+z2;z2=lp[2]*x-lp[4]*y;
-    out[i]=y*vel*0.28;
-    // 指先が当たる「ぺち」
-    if(t<0.03){
-      const ng=t<0.002?Math.exp(floorGain*(1-t/0.002)):Math.exp(floorGain*(t-0.002)/0.028);
-      const nx=(Math.random()*2-1)*ng*0.05*vel;
-      const ny=bp[0]*nx+n1;n1=bp[1]*nx-bp[3]*ny+n2;n2=bp[2]*nx-bp[4]*ny;
-      out[i]+=ny;
-    }
-  }
-  let peak=0;for(let i=0;i<toneN;i++)peak=Math.max(peak,Math.abs(out[i]));
-  const pcm=new Int16Array(out.length);
-  for(let i=0;i<toneN;i++)pcm[i]=out[i]/peak*0.95*32767*Math.min(1,(toneN-i)/(sr*0.02));
-  return makeSound(pcm,sr);
-}
-
 function buildBeepPCM(n){ // 2200Hz矩形波×n連ピ（振幅95%）を生成
   const sr=22050,beepN=Math.floor(sr*0.11),gapN=Math.floor(sr*0.07);
   const pcm=new Int16Array(n*(beepN+gapN));
@@ -618,7 +600,6 @@ function buildBeepPCM(n){ // 2200Hz矩形波×n連ピ（振幅95%）を生成
 }
 const ALARM=buildBeepPCM(4);
 const BEEP=buildBeepPCM(1); // 声OFFのときのスタート音「ピッ」＝アラームと同音色・同音量
-const PON=buildPon();
 const SILENT_URL=pcmToURL(new Int16Array(2205),22050);
 const player=new Audio();
 player.setAttribute("playsinline","");
@@ -635,30 +616,18 @@ function unlockAudio(){ // タップ（ユーザー操作）のときに無音�
   playURL(SILENT_URL);
 }
 
-/* 音量スライダー: 動かしている間は数字だけ変え、指を離したら（change）その音量で「ポン」 */
-const volSlider=document.getElementById("volSlider"),volVal=document.getElementById("volVal");
-function showVolume(){
-  volSlider.value=volume;
-  volVal.textContent=volume+"%";
-  volSlider.style.setProperty("--pct",(volume-VOL_MIN)/(VOL_MAX-VOL_MIN)*100+"%");
-}
-volSlider.addEventListener("input",()=>{volume=+volSlider.value;showVolume();});
-volSlider.addEventListener("change",()=>{
-  volume=+volSlider.value;showVolume();
-  try{localStorage.setItem("volume",volume);}catch(e){}
-  playSound(PON);
-});
-showVolume();
-
 /* ===== 音声カウント（ずんだもん・VOICEVOX事前生成） =====
    外部ファイルを直接 src にすると、iOSではネットワーク読み込みの遅延で鳴らないことがあるため、
-   fetch して手元に持っておく（鳴らすときに音量を合わせて BlobURL にする） */
-const VOICE_NAMES=["m1","s30","c10","c9","c8","c7","c6","c5","c4","c3","c2","c1"];
+   fetch して手元に持っておく */
+const VOICE_NAMES=["end","m1","s30","c10","c9","c8","c7","c6","c5","c4","c3","c2","c1"];
 const voices={};
 VOICE_NAMES.forEach(async name=>{
   try{voices[name]=parseWav(await fetch(`voice/${name}.wav`).then(r=>r.arrayBuffer()));}catch(e){}
 });
 let voiceFired=new Set();
+// スタートの声「1分、スタートなのだ」が鳴っている間は、節目の声を出さない（v1.10）。
+// 出口が1つなので、1分・30秒・10秒ちょうどで始めると、0.2秒後の「あと1分なのだ」がスタートの声を消していた
+let quietUntil=0;
 function playVoice(name){
   if(!voiceOn)return;
   playSound(voices[name]);
@@ -666,6 +635,7 @@ function playVoice(name){
 function checkVoiceCues(remainMs){
   if(!voiceOn)return;
   const sec=Math.ceil(remainMs/1000);
+  if(Date.now()<quietUntil){if(sec===60||sec===30||sec<=10)voiceFired.add(sec);return;}
   if(sec===60&&!voiceFired.has(60)){voiceFired.add(60);playVoice("m1");}
   if(sec===30&&!voiceFired.has(30)){voiceFired.add(30);playVoice("s30");}
   if(sec>=1&&sec<=10&&!voiceFired.has(sec)){voiceFired.add(sec);playVoice("c"+sec);}
@@ -715,16 +685,26 @@ function playStartSound(resumed){
   if(!resumed)snd=startPhrase(total);
   else if(parts.resume)snd=resumeSnd||(resumeSnd=makeSound(parts.resume,PART_SR));
   playSound(snd||BEEP);
+  quietUntil=snd?Date.now()+snd.pcm.length/snd.sr*1000:0;
 }
 
 function playBeep(){playSound(ALARM);}
-function startBeeps(){playBeep();beepInt=setInterval(playBeep,1200);}
+let endVoiceTmr=null;
+function startBeeps(){ // 声ONなら「時間なのだ」と言ってからピピピピ（v1.11）
+  const loop=()=>{playBeep();beepInt=setInterval(playBeep,1200);};
+  const v=voiceOn&&voices.end;
+  if(!v){loop();return;}
+  playSound(v);
+  endVoiceTmr=setTimeout(()=>{endVoiceTmr=null;loop();},Math.max(600,v.pcm.length/v.sr*1000-400)); // お尻の無音0.5秒ぶん早めに
+}
 function vibrateAlarm(){ // iPhoneのSafariはVibration API非対応のため実質Android向け
   if(navigator.vibrate)navigator.vibrate([300,150,300,150,300,150,300,150,300]);
 }
 function stopAlarm(){
   if(beepInt){clearInterval(beepInt);beepInt=null;}
-  if(ALARM.url&&player.src===ALARM.url)player.pause();
+  if(endVoiceTmr){clearTimeout(endVoiceTmr);endVoiceTmr=null;}
+  const u=player.src;
+  if(u&&(u===ALARM.url||(voices.end&&u===voices.end.url)))player.pause();
   if(alarmTimer){clearTimeout(alarmTimer);alarmTimer=null;}
   if(navigator.vibrate)navigator.vibrate(0);
 }
