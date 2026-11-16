@@ -19,7 +19,9 @@
    53pxの文字がまだかすれた）ので、申告値は当てにせず59pxを下限にする */
 :root{ --safe-t:env(safe-area-inset-top); }
 @media (display-mode: standalone){
-  :root{ --safe-t:max(env(safe-area-inset-top), 59px); }
+  /* 2026-11-16: 新しいiOSで上端のすりガラスが出なくなったので59pxの下限をやめた。戻ったら max(env(safe-area-inset-top), 59px) に戻す。
+     本体の上端＝申告値＋1px（申告47pxの実機で 73px→48px） */
+  :root{ --safe-t:max(calc(env(safe-area-inset-top) - 13px), 0px); }
 }
 :root{
   --bg:#F6EDE3;
@@ -163,7 +165,7 @@ h1::before,h1::after{content:"";display:block;width:34px;height:2px;border-radiu
 /* 大きく表示（v1.11）: 動いている間だけ。バーと数字を画面いっぱいにし、操作はスタート／リセットだけ残す */
 body.big{
   height:100dvh;overflow:hidden;gap:10px;
-  padding:calc(var(--safe-t) + 8px) max(14px,env(safe-area-inset-right)) calc(env(safe-area-inset-bottom) + 8px) max(14px,env(safe-area-inset-left));
+  padding:calc(var(--safe-t) + 14px) max(14px,env(safe-area-inset-right)) calc(env(safe-area-inset-bottom) + 8px) max(14px,env(safe-area-inset-left));
 }
 @media (orientation:landscape){
   body.big{padding-top:max(8px,env(safe-area-inset-top))}

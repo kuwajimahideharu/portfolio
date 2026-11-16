@@ -1,4 +1,4 @@
-const CACHE = "timer-v22";
+const CACHE = "timer-v23";
 // 相対パス: ドメイン直下でもサブフォルダ（hideharu.site/timer/）でも動く
 const VOICE_FILES = ["end", "m1", "s30", "c10", "c9", "c8", "c7", "c6", "c5", "c4", "c3", "c2", "c1"].map(n => `./voice/${n}.wav`);
 const ASSETS = ["./", "./voice/start/start.wav", "./voice/start/resume.wav", "./manifest.webmanifest", "./icon.svg", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png", ...VOICE_FILES];
