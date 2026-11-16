@@ -17,7 +17,10 @@
      53pxのカードがまだかすれた）ので、申告値は当てにせず59pxを下限にする */
   :root { --safe-t: env(safe-area-inset-top); }
   @media (display-mode: standalone) {
-    :root { --safe-t: max(env(safe-area-inset-top), 59px); }
+    /* 2026-11-16: 新しいiOSではすりガラスが出なくなったので、59pxの下限をやめて
+       カードを約4.5mm（27px）上げた。カード上端＝申告値＋1px（申告47pxの実機で 75px→48px）。
+       すりガラスが戻ったら max(env(safe-area-inset-top), 59px) に戻す */
+    :root { --safe-t: max(calc(env(safe-area-inset-top) - 15px), 0px); }
   }
   :root {
     --orange: #E06B32;
@@ -120,6 +123,10 @@
     display: flex; justify-content: space-between; font-size: 10px; font-weight: 500;
     opacity: .65; margin-top: 3px;
   }
+  /* このあとの雨（降水短時間予報・1時間ごと） */
+  #srf { margin-top: 8px; }
+  .rainlabels.ticks { justify-content: flex-start; gap: 3px; }
+  .rainlabels.ticks span { flex: 1; min-width: 0; white-space: nowrap; }
   .grid {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
     margin-top: 18px;
@@ -184,6 +191,11 @@
         <div class="rainbar" id="rainbar"></div>
         <div class="rainlabels"><span>今</span><span>15分</span><span>30分</span><span>45分</span><span>60分</span></div>
       </div>
+      <div class="nowcast" id="srf" hidden>
+        <span id="srfMsg"></span>
+        <div class="rainbar" id="srfbar"></div>
+        <div class="rainlabels ticks" id="srflabels"></div>
+      </div>
       <div class="grid">
         <div class="cell"><div class="k">湿度</div><div class="v" id="hum">--<small> %</small></div></div>
         <div class="cell"><div class="k">風速</div><div class="v" id="wind">--<small> m/s</small></div></div>
@@ -199,7 +211,7 @@
     </footer>
   </div>
   <div class="status" id="status"></div>
-  <div class="credit">気温はアメダス実測値（気象庁）／雨雲は高解像度降水ナウキャスト／天候は実測＋予報モデル</div>
+  <div class="credit">気温はアメダス実測値（気象庁）／雨雲は高解像度降水ナウキャスト／このあとの雨は降水短時間予報／天候は実測＋予報モデル</div>
 
   <div class="share">
     <svg viewBox="0 0 29 29" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" role="img" aria-label="配布用QRコード"><path fill="#5A3A22" d="M0 0h7v1h-7zM10 0h2v1h-2zM13 0h1v1h-1zM16 0h1v1h-1zM19 0h1v1h-1zM22 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM9 1h2v1h-2zM13 1h3v1h-3zM18 1h1v1h-1zM20 1h1v1h-1zM22 1h1v1h-1zM28 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM10 2h1v1h-1zM13 2h1v1h-1zM16 2h2v1h-2zM19 2h2v1h-2zM22 2h1v1h-1zM24 2h3v1h-3zM28 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM10 3h6v1h-6zM18 3h1v1h-1zM22 3h1v1h-1zM24 3h3v1h-3zM28 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM9 4h1v1h-1zM11 4h4v1h-4zM16 4h1v1h-1zM18 4h1v1h-1zM20 4h1v1h-1zM22 4h1v1h-1zM24 4h3v1h-3zM28 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h1v1h-1zM11 5h1v1h-1zM13 5h2v1h-2zM18 5h2v1h-2zM22 5h1v1h-1zM28 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h7v1h-7zM10 7h3v1h-3zM14 7h1v1h-1zM17 7h2v1h-2zM20 7h1v1h-1zM0 8h1v1h-1zM3 8h1v1h-1zM5 8h2v1h-2zM8 8h1v1h-1zM10 8h3v1h-3zM15 8h1v1h-1zM21 8h1v1h-1zM23 8h1v1h-1zM0 9h1v1h-1zM2 9h3v1h-3zM7 9h3v1h-3zM11 9h2v1h-2zM14 9h2v1h-2zM17 9h1v1h-1zM20 9h3v1h-3zM25 9h1v1h-1zM28 9h1v1h-1zM0 10h2v1h-2zM3 10h2v1h-2zM6 10h1v1h-1zM12 10h1v1h-1zM16 10h1v1h-1zM18 10h3v1h-3zM22 10h6v1h-6zM4 11h2v1h-2zM7 11h3v1h-3zM11 11h1v1h-1zM14 11h2v1h-2zM18 11h2v1h-2zM21 11h1v1h-1zM23 11h1v1h-1zM26 11h2v1h-2zM1 12h2v1h-2zM6 12h5v1h-5zM16 12h2v1h-2zM21 12h2v1h-2zM25 12h1v1h-1zM27 12h2v1h-2zM0 13h1v1h-1zM4 13h1v1h-1zM8 13h2v1h-2zM11 13h1v1h-1zM15 13h1v1h-1zM17 13h5v1h-5zM0 14h1v1h-1zM4 14h4v1h-4zM10 14h1v1h-1zM12 14h1v1h-1zM15 14h3v1h-3zM20 14h1v1h-1zM22 14h7v1h-7zM0 15h1v1h-1zM9 15h6v1h-6zM16 15h2v1h-2zM19 15h1v1h-1zM25 15h1v1h-1zM27 15h1v1h-1zM2 16h5v1h-5zM8 16h2v1h-2zM11 16h7v1h-7zM20 16h2v1h-2zM27 16h1v1h-1zM1 17h1v1h-1zM3 17h1v1h-1zM5 17h1v1h-1zM8 17h1v1h-1zM10 17h1v1h-1zM12 17h1v1h-1zM15 17h1v1h-1zM17 17h1v1h-1zM22 17h2v1h-2zM25 17h1v1h-1zM28 17h1v1h-1zM0 18h1v1h-1zM3 18h1v1h-1zM5 18h3v1h-3zM9 18h5v1h-5zM18 18h1v1h-1zM22 18h3v1h-3zM27 18h2v1h-2zM3 19h3v1h-3zM7 19h1v1h-1zM9 19h3v1h-3zM13 19h1v1h-1zM15 19h3v1h-3zM19 19h1v1h-1zM21 19h1v1h-1zM23 19h2v1h-2zM27 19h2v1h-2zM0 20h1v1h-1zM4 20h1v1h-1zM6 20h2v1h-2zM9 20h2v1h-2zM12 20h1v1h-1zM14 20h1v1h-1zM16 20h1v1h-1zM20 20h5v1h-5zM26 20h1v1h-1zM8 21h2v1h-2zM12 21h2v1h-2zM15 21h3v1h-3zM20 21h1v1h-1zM24 21h1v1h-1zM26 21h3v1h-3zM0 22h7v1h-7zM10 22h2v1h-2zM13 22h3v1h-3zM20 22h1v1h-1zM22 22h1v1h-1zM24 22h1v1h-1zM27 22h1v1h-1zM0 23h1v1h-1zM6 23h1v1h-1zM8 23h1v1h-1zM13 23h1v1h-1zM16 23h1v1h-1zM18 23h1v1h-1zM20 23h1v1h-1zM24 23h5v1h-5zM0 24h1v1h-1zM2 24h3v1h-3zM6 24h1v1h-1zM9 24h2v1h-2zM12 24h1v1h-1zM14 24h4v1h-4zM20 24h5v1h-5zM27 24h1v1h-1zM0 25h1v1h-1zM2 25h3v1h-3zM6 25h1v1h-1zM8 25h3v1h-3zM13 25h6v1h-6zM20 25h1v1h-1zM22 25h5v1h-5zM28 25h1v1h-1zM0 26h1v1h-1zM2 26h3v1h-3zM6 26h1v1h-1zM9 26h1v1h-1zM11 26h1v1h-1zM18 26h4v1h-4zM24 26h3v1h-3zM28 26h1v1h-1zM0 27h1v1h-1zM6 27h1v1h-1zM11 27h1v1h-1zM14 27h1v1h-1zM16 27h2v1h-2zM19 27h2v1h-2zM23 27h1v1h-1zM27 27h1v1h-1zM0 28h7v1h-7zM8 28h2v1h-2zM12 28h1v1h-1zM14 28h2v1h-2zM17 28h5v1h-5zM25 28h1v1h-1zM27 28h1v1h-1z"/></svg>
@@ -383,7 +395,8 @@ function tilePixel(lat, lon, z) {
 const jmaDate = (s) =>
   new Date(`${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}T${s.slice(8,10)}:${s.slice(10,12)}:${s.slice(12,14)}Z`);
 
-function tileLevel(url, px, py) {
+// missing: 画像が取れなかったときに返す値（雨なしの404を0と読むか、「不明」のnullにするか）
+function tileLevel(url, px, py, missing = 0) {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -395,9 +408,9 @@ function tileLevel(url, px, py) {
         ctx.drawImage(img, 0, 0);
         const [r, g, b, a] = ctx.getImageData(px, py, 1, 1).data;
         resolve(levelFromRGBA(r, g, b, a));
-      } catch (e) { resolve(0); }
+      } catch (e) { resolve(missing); }
     };
-    img.onerror = () => resolve(0); // 雨のないタイルは404で返る
+    img.onerror = () => resolve(missing); // 雨のないタイルは404で返る
     img.src = url;
   });
 }
@@ -440,6 +453,85 @@ async function getNowcast(lat, lon) {
       : { icon: "🌈", text: "この先1時間 雨の心配はありません", level: "ok" };
   }
   return { timeline, message };
+}
+
+// ---------- このあとの雨（降水短時間予報・15時間先まで1時間ごと） ----------
+// 気象庁「今後の雨」と同じタイル（jmatile rasrf）。色は雨雲レーダーと同じパレットなので levelFromRGBA をそのまま使う。
+// 各コマは「その時刻までの1時間に降る量」。6時間先までは1kmメッシュ、7〜15時間先は5kmメッシュ。
+// 2026-11-16 に実物で確かめたこと:
+//  ・画像があるのは毎時00分と30分発表の分だけ（一覧 targetTimes.json には10分ごとの発表も載るが、画像は無い）
+//  ・発表から画像が出そろうまで20分ほどかかり、その間は一覧に載っていても404
+//    → 一覧は読まず、時計から候補を作って新しい順に試す
+//  ・6時間先までは、雨のない場所のタイルが z8・z10 では404になる（z6 は空の画像が必ず返る）
+//    → 「出そろったか」は z6 で確かめ、強さは z10 で読む（404は雨なし）
+//  ・7〜15時間先は毎時00分発表だけで、雨がなくても空の画像が返る（404は「まだ無い」）
+const HOUR = 3600e3;
+const jmaStamp = (ms) => new Date(ms).toISOString().replace(/[-:T]/g, "").slice(0, 14);
+async function getShortForecast(lat, lon) {
+  const { x, y, px, py } = tilePixel(lat, lon, 10);
+  const p6 = tilePixel(lat, lon, 6);
+  const tile = (b, v, z, tx, ty) =>
+    `${JMA}/jmatile/data/rasrf/${jmaStamp(b)}/none/${jmaStamp(v)}/surf/rasrf/${z}/${tx}/${ty}.png`;
+
+  // いちばん新しい「出そろった発表」を探す（最初と最後のコマが z6 で取れれば出そろっている）
+  const b0 = Math.floor(Date.now() / (HOUR / 2)) * (HOUR / 2);
+  const bases = [0, 1, 2, 3].map((k) => b0 - k * (HOUR / 2));
+  const ready = await Promise.all(bases.map(async (b) => {
+    const got = await Promise.all([1, 6].map((h) => tileLevel(tile(b, b + h * HOUR, 6, p6.x, p6.y), p6.px, p6.py, null)));
+    return got.every((v) => v !== null);
+  }));
+  const base = bases[ready.indexOf(true)];
+  if (base === undefined) throw new Error("降水短時間予報が取れません");
+
+  const hourBase = Math.floor(base / HOUR) * HOUR;   // 7〜15時間先は毎時00分の発表から
+  const [near, far] = await Promise.all([
+    Promise.all([1, 2, 3, 4, 5, 6].map(async (h) => {
+      const t1 = base + h * HOUR;
+      return { t0: t1 - HOUR, t1, level: await tileLevel(tile(base, t1, 10, x, y), px, py, 0) };
+    })),
+    Promise.all([7, 8, 9, 10, 11, 12, 13, 14, 15].map(async (h) => {
+      const t1 = hourBase + h * HOUR;
+      return { t0: t1 - HOUR, t1, level: await tileLevel(tile(hourBase, t1, 10, x, y), px, py, null) };
+    })),
+  ]);
+  // 30分発表のときは、00分発表の7時間先のコマが6時間先のコマと30分重なるが、そのままつなぐ
+  const cells = [...near, ...far.filter((c) => c.level !== null)];
+  return { base, cells };
+}
+
+// 「15時」「あす3時半」。日付が変わるときだけ「あす」を付ける
+function clockJa(ms, plain) {
+  const d = new Date(ms);
+  const tomorrow = !plain && d.getDate() !== new Date().getDate();
+  return `${tomorrow ? "あす" : ""}${d.getHours()}時${d.getMinutes() >= 30 ? "半" : ""}`;
+}
+
+function srfMessage(cells) {
+  const wet = (c) => c.level >= 2;
+  const first = cells.findIndex(wet);
+  const end = clockJa(cells[cells.length - 1].t1);
+  if (first < 0) return { text: `🌤 ${end}ごろまで 雨の予報はありません`, level: "ok" };
+  if (first > 0) {
+    return { text: `☔ ${clockJa(cells[first].t0)}ごろから${RAIN_BANDS[cells[first].level].label}の予報です`, level: "warn" };
+  }
+  const stop = cells.findIndex((c, i) => i > 0 && cells.slice(i).every((u) => !wet(u)));
+  return stop > 0
+    ? { text: `☔ ${clockJa(cells[stop].t0)}ごろまで雨の予報です`, level: "warn" }
+    : { text: `☔ ${end}ごろまで 雨が続く予報です`, level: "warn" };
+}
+
+// 取り置いた予報も出すので、もう過ぎたコマは描くたびに落とす
+function renderSrf(srf) {
+  const cells = srf ? srf.cells.filter((c) => c.t1 > Date.now() + 10 * 60e3) : [];
+  $("srf").hidden = cells.length < 3;
+  if (cells.length < 3) return;
+  const m = srfMessage(cells);
+  $("srfMsg").textContent = m.text;
+  $("srf").className = `nowcast ${m.level}`;
+  $("srfbar").innerHTML = cells
+    .map((c) => `<span class="l${c.level}" title="${clockJa(c.t0)}〜${c.level >= 2 ? " " + RAIN_BANDS[c.level].label : ""}"></span>`)
+    .join("");
+  $("srflabels").innerHTML = cells.map((c, i) => `<span>${i % 3 === 0 ? clockJa(c.t0, true) : ""}</span>`).join("");
 }
 
 // ---------- 体感温度（Steadman式） ----------
@@ -717,6 +809,7 @@ function render(w) {
       .map((t) => `<span class="l${t.level}" title="${t.min}分後${t.band ? " " + t.band.label : ""}"></span>`)
       .join("");
   }
+  renderSrf(w.srf);
   shownAt = w.observedAt;
   setObs("");
   $("hum").innerHTML = (w.humidity ?? "--") + "<small> %</small>";
@@ -763,12 +856,22 @@ async function update(opts = {}) {
         if (lastOk) saveLast(lastW, lastOk);   // 最新の値を出したあとなら、町名も一緒に取り置き直す
       });
 
+    // このあとの雨も本体の描画を待たせない（届いたら差し込む）。届くまでは前回の予報を出しておく
+    const srfP = getShortForecast(latitude, longitude).catch(() => null);
+
     const w = await buildWeather(latitude, longitude);
+    w.srf = (lastW && lastW.srf) || null;
     lastW = w;
     render(w);
     lastOk = Date.now();
     saveLast(w, lastOk);
     setStatus("");
+    srfP.then((srf) => {
+      if (!srf || my !== gen) return;
+      w.srf = srf;
+      renderSrf(srf);
+      saveLast(w, lastOk);
+    });
   } catch (e) {
     // 測位・気象庁のどちらかが取れなくても、出ている値は消さない
     const offline = e instanceof TypeError || !navigator.onLine;
